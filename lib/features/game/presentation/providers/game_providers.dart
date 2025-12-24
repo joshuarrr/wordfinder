@@ -353,4 +353,20 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
     // TODO: Implement hint logic (reveal first letter or highlight word)
     state = AsyncData(current.copyWith(hintsUsed: current.hintsUsed + 1));
   }
+
+  /// Dev mode: Auto-complete the puzzle by marking all words as found
+  void autoComplete() {
+    final current = state.valueOrNull;
+    if (current == null || current.isCompleted) return;
+    
+    // Mark all words as found
+    final allWords = current.puzzle.words.map((wp) => wp.word).toSet();
+    
+    state = AsyncData(current.copyWith(
+      foundWords: allWords,
+      selectedPath: [],
+      isCompleted: true,
+      hasError: false,
+    ));
+  }
 }

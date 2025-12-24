@@ -36,6 +36,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   late final AsyncGameStateNotifierProvider _gameStateProvider;
   bool _showCompletionCelebration = false;
   bool _timerStarted = false;
+  bool _completionDialogShown = false;
 
   @override
   void initState() {
@@ -60,16 +61,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final asyncState = ref.read(_gameStateProvider);
       final gameState = asyncState.valueOrNull;
-      if (gameState == null || gameState.isPaused || gameState.isCompleted) return;
+      if (gameState == null || gameState.isPaused || gameState.isCompleted) {
+        if (gameState?.isCompleted == true && !_completionDialogShown) {
+          _showCompletionDialog();
+        }
+        return;
+      }
       
       ref.read(_gameStateProvider.notifier).updateElapsedTime(
         gameState.elapsedSeconds + 1,
       );
-      
-      // Check if game is completed
-      if (gameState.isCompleted) {
-        _showCompletionDialog();
-      }
     });
   }
 
@@ -194,10 +195,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     }
     
     // Show completion dialog when game is completed
-    if (gameState.isCompleted && !_showCompletionCelebration) {
+    if (gameState.isCompleted && !_showCompletionCelebration && !_completionDialogShown) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() => _showCompletionCelebration = true);
-        _showCompletionDialog();
+        if (!_completionDialogShown && mounted) {
+          setState(() => _showCompletionCelebration = true);
+          _showCompletionDialog();
+        }
       });
     }
 
@@ -237,6 +240,15 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       ),
                     ),
                   ),
+                ),
+              if (AppConstants.devMode)
+                AppIconButton(
+                  icon: Icons.auto_awesome_rounded,
+                  onPressed: () {
+                    ref.read(_gameStateProvider.notifier).autoComplete();
+                  },
+                  backgroundColor: Colors.transparent,
+                  tooltip: 'Dev: Auto-complete',
                 ),
               AppIconButton(
                 icon: Icons.lightbulb_outline_rounded,
@@ -334,32 +346,39 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   void _showCompletionDialog() {
+    // Prevent multiple dialogs from showing
+    if (_completionDialogShown) return;
+    
     final asyncState = ref.read(_gameStateProvider);
     final gameState = asyncState.valueOrNull;
-    if (gameState == null) return;
+    if (gameState == null || !gameState.isCompleted) return;
     
+    _completionDialogShown = true;
     _timer?.cancel();
     
     // Show confetti first, then dialog
     Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
       
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => _CompletionDialog(
-          gameState: gameState,
-          onHome: () {
-            Navigator.pop(context);
-            context.go(AppRoutes.home);
-          },
-          onPlayAgain: () {
-            Navigator.pop(context);
-            context.go(AppRoutes.home);
-            // TODO: Implement proper restart
-          },
-        ),
-      );
+      // Double-check that dialog hasn't been shown already
+      if (_completionDialogShown) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => _CompletionDialog(
+            gameState: gameState,
+            onHome: () {
+              Navigator.pop(context);
+              context.go(AppRoutes.home);
+            },
+            onPlayAgain: () {
+              Navigator.pop(context);
+              context.go(AppRoutes.home);
+              // TODO: Implement proper restart
+            },
+          ),
+        );
+      }
     });
   }
 }
