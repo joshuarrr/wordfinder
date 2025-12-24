@@ -55,25 +55,40 @@ class PuzzleGenerator {
   }) {
     final gridSize = difficulty.gridSize;
     final wordCount = difficulty.wordCount;
+    final minWordLength = difficulty.minWordLength;
+    final maxWordLength = difficulty.maxWordLength;
     
-    // Get words for this category - filter by length to fit grid
+    // Get words for this category - filter by difficulty-based length constraints
     final allWords = WordLists.getWordsForCategory(category);
     
-    // Filter words that can fit in the grid
-    // For a grid of size N, a word can be at most N characters
-    // But prefer shorter words for easier placement
-    final maxWordLength = gridSize;
-    final preferredMaxLength = (gridSize * 0.8).ceil(); // Prefer words up to 80% of grid size
+    // Filter words based on difficulty word length constraints
+    // Also ensure words fit in the grid (word length can't exceed grid size)
+    final effectiveMaxLength = maxWordLength.clamp(minWordLength, gridSize);
     
     // Filter and deduplicate words - ensure each word appears only once
     final availableWords = allWords
-        .where((word) => word.length <= maxWordLength && word.length >= 3) // At least 3 letters
+        .where((word) => word.length >= minWordLength && word.length <= effectiveMaxLength)
         .toSet() // Remove duplicates
-        .toList()
-      ..shuffle(_random);
+        .toList();
     
-    // Sort by length (shorter first for easier placement)
-    availableWords.sort((a, b) => a.length.compareTo(b.length));
+    // Shuffle to ensure randomness
+    availableWords.shuffle(_random);
+    
+    // Group words by length, then shuffle within each group
+    // This ensures variety while still preferring shorter words
+    final wordsByLength = <int, List<String>>{};
+    for (final word in availableWords) {
+      wordsByLength.putIfAbsent(word.length, () => []).add(word);
+    }
+    
+    // Create a randomized list that prefers shorter words but maintains variety
+    final randomizedWords = <String>[];
+    for (int len = minWordLength; len <= effectiveMaxLength; len++) {
+      if (wordsByLength.containsKey(len)) {
+        final words = wordsByLength[len]!..shuffle(_random);
+        randomizedWords.addAll(words);
+      }
+    }
     
     // Create empty grid
     final grid = List.generate(
@@ -84,8 +99,32 @@ class PuzzleGenerator {
     final placedWords = <WordPosition>[];
     final usedWords = <String>{};
     
-    // Try to place words - use a more systematic approach
-    for (final word in availableWords) {
+    // Try to place words with better randomization
+    // Use weighted random selection: prefer shorter words but allow longer ones
+    // For easier difficulties, prefer shorter words; for harder, allow more length variety
+    final preferredMaxLengthForSelection = difficulty == Difficulty.easy
+        ? effectiveMaxLength
+        : (effectiveMaxLength * 0.75).ceil();
+    
+    final wordsToTry = <String>[];
+    for (int len = minWordLength; len <= preferredMaxLengthForSelection; len++) {
+      if (wordsByLength.containsKey(len)) {
+        final words = List<String>.from(wordsByLength[len]!)..shuffle(_random);
+        wordsToTry.addAll(words.take(wordCount * 2)); // Take more candidates
+      }
+    }
+    // Add some longer words for variety (especially for medium/hard)
+    for (int len = preferredMaxLengthForSelection + 1; len <= effectiveMaxLength; len++) {
+      if (wordsByLength.containsKey(len)) {
+        final words = List<String>.from(wordsByLength[len]!)..shuffle(_random);
+        wordsToTry.addAll(words.take(wordCount)); // Fewer longer words
+      }
+    }
+    // Final shuffle to mix lengths
+    wordsToTry.shuffle(_random);
+    
+    // Try placing words
+    for (final word in wordsToTry) {
       if (placedWords.length >= wordCount) break;
       if (usedWords.contains(word)) continue;
       
@@ -98,14 +137,14 @@ class PuzzleGenerator {
       }
     }
     
-    // If we still don't have enough words, try with even shorter words
+    // If we still don't have enough words, try with remaining words
     if (placedWords.length < wordCount) {
-      final shortWords = availableWords
-          .where((word) => word.length <= preferredMaxLength)
+      final remainingWords = randomizedWords
           .where((word) => !usedWords.contains(word))
-          .toList();
+          .toList()
+        ..shuffle(_random);
       
-      for (final word in shortWords) {
+      for (final word in remainingWords) {
         if (placedWords.length >= wordCount) break;
         
         final position = _tryPlaceWord(grid, word, gridSize);
@@ -120,11 +159,11 @@ class PuzzleGenerator {
     // If we still don't have enough, try placing words more aggressively
     // by allowing overlaps on matching letters
     if (placedWords.length < wordCount) {
-      final remainingWords = availableWords
+      final remainingWords = randomizedWords
           .where((word) => !usedWords.contains(word))
-          .where((word) => word.length >= 3 && word.length <= gridSize)
-          .take(wordCount * 2)
-          .toList();
+          .where((word) => word.length >= minWordLength && word.length <= effectiveMaxLength)
+          .toList()
+        ..shuffle(_random);
       
       for (final word in remainingWords) {
         if (placedWords.length >= wordCount) break;

@@ -19,6 +19,14 @@ abstract final class AppConstants {
   static const int wordCountMedium = 10;
   static const int wordCountHard = 15;
 
+  // Word length constraints by difficulty
+  static const int minWordLengthEasy = 3;
+  static const int maxWordLengthEasy = 5;
+  static const int minWordLengthMedium = 4;
+  static const int maxWordLengthMedium = 8;
+  static const int minWordLengthHard = 5;
+  static const int maxWordLengthHard = 15;
+
   // Time limits (in seconds) - 0 means unlimited
   static const int timeLimitCasual = 0;
   static const int timeLimitEasy = 180;    // 3 minutes
@@ -77,18 +85,24 @@ enum Difficulty {
     wordCount: AppConstants.wordCountEasy,
     timeLimit: AppConstants.timeLimitEasy,
     hints: AppConstants.hintsPerPuzzleEasy,
+    minWordLength: AppConstants.minWordLengthEasy,
+    maxWordLength: AppConstants.maxWordLengthEasy,
   ),
   medium(
     gridSize: AppConstants.gridSizeMedium,
     wordCount: AppConstants.wordCountMedium,
     timeLimit: AppConstants.timeLimitMedium,
     hints: AppConstants.hintsPerPuzzleMedium,
+    minWordLength: AppConstants.minWordLengthMedium,
+    maxWordLength: AppConstants.maxWordLengthMedium,
   ),
   hard(
     gridSize: AppConstants.gridSizeHard,
     wordCount: AppConstants.wordCountHard,
     timeLimit: AppConstants.timeLimitHard,
     hints: AppConstants.hintsPerPuzzleHard,
+    minWordLength: AppConstants.minWordLengthHard,
+    maxWordLength: AppConstants.maxWordLengthHard,
   );
 
   const Difficulty({
@@ -96,12 +110,16 @@ enum Difficulty {
     required this.wordCount,
     required this.timeLimit,
     required this.hints,
+    required this.minWordLength,
+    required this.maxWordLength,
   });
 
   final int gridSize;
   final int wordCount;
   final int timeLimit;
   final int hints;
+  final int minWordLength;
+  final int maxWordLength;
 
   String get displayName => switch (this) {
         Difficulty.easy => 'Easy',
