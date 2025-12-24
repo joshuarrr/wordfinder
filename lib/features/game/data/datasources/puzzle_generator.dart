@@ -138,8 +138,8 @@ class PuzzleGenerator {
       }
     }
     
-    // Fill remaining cells with random letters
-    _fillEmptyCells(grid, gridSize);
+    // Fill remaining cells with random letters, avoiding duplicate words
+    _fillEmptyCellsSafely(grid, gridSize, placedWords);
     
     return Puzzle(
       grid: grid,
@@ -310,14 +310,134 @@ class PuzzleGenerator {
     }
   }
 
-  /// Fill empty cells with random letters
-  void _fillEmptyCells(List<List<String>> grid, int gridSize) {
+  /// Fill empty cells with random letters, ensuring no duplicate findable words are created
+  void _fillEmptyCellsSafely(
+    List<List<String>> grid,
+    int gridSize,
+    List<WordPosition> placedWords,
+  ) {
+    // Get all findable words (forward and reverse since words can be found both ways)
+    final findableWords = <String>{};
+    for (final wp in placedWords) {
+      findableWords.add(wp.word);
+      findableWords.add(wp.word.split('').reversed.join());
+    }
+
     for (int row = 0; row < gridSize; row++) {
       for (int col = 0; col < gridSize; col++) {
         if (grid[row][col].isEmpty) {
-          grid[row][col] = AppConstants.alphabet[_random.nextInt(AppConstants.alphabet.length)];
+          // Try random letters until we find one that doesn't create a duplicate word
+          final shuffledAlphabet = AppConstants.alphabet.split('')..shuffle(_random);
+          
+          String chosenLetter = shuffledAlphabet.first;
+          for (final letter in shuffledAlphabet) {
+            if (!_wouldCreateDuplicateWord(grid, row, col, letter, gridSize, placedWords, findableWords)) {
+              chosenLetter = letter;
+              break;
+            }
+          }
+          
+          grid[row][col] = chosenLetter;
         }
       }
     }
+  }
+
+  /// Check if placing a letter at (row, col) would create a duplicate of any findable word
+  bool _wouldCreateDuplicateWord(
+    List<List<String>> grid,
+    int row,
+    int col,
+    String letter,
+    int gridSize,
+    List<WordPosition> placedWords,
+    Set<String> findableWords,
+  ) {
+    // Temporarily place the letter
+    final originalValue = grid[row][col];
+    grid[row][col] = letter;
+
+    // Check all directions from this cell
+    for (final direction in AppConstants.directions) {
+      for (final word in findableWords) {
+        // Check if this cell could be any position in the word
+        for (int posInWord = 0; posInWord < word.length; posInWord++) {
+          if (_checkWordAtPosition(grid, row, col, direction, word, posInWord, gridSize, placedWords)) {
+            // Found a duplicate - restore and return true
+            grid[row][col] = originalValue;
+            return true;
+          }
+        }
+      }
+    }
+
+    // Restore original value
+    grid[row][col] = originalValue;
+    return false;
+  }
+
+  /// Check if a word exists at a position where (row, col) is at posInWord index
+  bool _checkWordAtPosition(
+    List<List<String>> grid,
+    int row,
+    int col,
+    (int, int) direction,
+    String word,
+    int posInWord,
+    int gridSize,
+    List<WordPosition> placedWords,
+  ) {
+    final (rowDelta, colDelta) = direction;
+    
+    // Calculate where the word would start
+    final startRow = row - (rowDelta * posInWord);
+    final startCol = col - (colDelta * posInWord);
+    
+    // Calculate where it would end
+    final endRow = startRow + (rowDelta * (word.length - 1));
+    final endCol = startCol + (colDelta * (word.length - 1));
+    
+    // Check bounds
+    if (startRow < 0 || startRow >= gridSize || startCol < 0 || startCol >= gridSize) {
+      return false;
+    }
+    if (endRow < 0 || endRow >= gridSize || endCol < 0 || endCol >= gridSize) {
+      return false;
+    }
+    
+    // Check if the word matches at this position
+    for (int i = 0; i < word.length; i++) {
+      final checkRow = startRow + (rowDelta * i);
+      final checkCol = startCol + (colDelta * i);
+      final cell = grid[checkRow][checkCol];
+      
+      // Empty cells can't form a complete word
+      if (cell.isEmpty) return false;
+      
+      if (cell != word[i]) return false;
+    }
+    
+    // Word matches! Check if this is the original placed position (which is allowed)
+    for (final wp in placedWords) {
+      if (wp.word == word || wp.word == word.split('').reversed.join()) {
+        // Check if this is the exact same position as the placed word
+        final wpEndRow = wp.startRow + (wp.direction.$1 * (wp.word.length - 1));
+        final wpEndCol = wp.startCol + (wp.direction.$2 * (wp.word.length - 1));
+        
+        // Same position forward
+        if (wp.startRow == startRow && wp.startCol == startCol &&
+            wp.direction == direction) {
+          return false; // This is the original placement, not a duplicate
+        }
+        // Same position but checking reversed word
+        if (wpEndRow == startRow && wpEndCol == startCol &&
+            wp.direction.$1 == -rowDelta && wp.direction.$2 == -colDelta) {
+          return false; // This is the original placement read backwards
+        }
+      }
+    }
+    
+    // This is a duplicate word at a different position
+    return true;
   }
 }
