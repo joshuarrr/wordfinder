@@ -18,6 +18,8 @@ dependencies:
   # Navigation
   go_router: ^14.6.2
   
+  # Local storage
+  shared_preferences: ^2.2.2
   
   # Animations
   flutter_animate: ^4.5.2

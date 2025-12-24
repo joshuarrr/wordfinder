@@ -7,6 +7,7 @@ import '../../features/game/presentation/screens/game_screen.dart';
 import '../../features/category/presentation/screens/category_screen.dart';
 import '../../features/difficulty/presentation/screens/difficulty_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/stats/presentation/screens/stats_screen.dart';
 import '../constants/app_constants.dart';
 
 /// Route paths
@@ -98,6 +99,17 @@ final appRouter = GoRouter(
           transitionsBuilder: _fadeScaleTransition,
         );
       },
+    ),
+
+    // Stats screen
+    GoRoute(
+      path: AppRoutes.stats,
+      name: 'stats',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const StatsScreen(),
+        transitionsBuilder: _slideUpTransition,
+      ),
     ),
   ],
 );

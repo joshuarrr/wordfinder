@@ -14,6 +14,10 @@ import '../providers/game_providers.dart';
 import '../widgets/word_list_widget.dart';
 import '../widgets/word_search_grid.dart';
 import '../widgets/confetti_celebration.dart';
+import '../../../score/presentation/widgets/cumulative_score_widget.dart';
+import '../../../score/presentation/widgets/puzzle_score_widget.dart';
+import '../../../score/presentation/widgets/score_breakdown_widget.dart';
+import '../../../score/presentation/providers/score_providers.dart';
 
 /// Main game screen with word search grid
 class GameScreen extends ConsumerStatefulWidget {
@@ -225,6 +229,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               ],
             ),
             actions: [
+              const CumulativeScoreWidget(),
               if (widget.gameMode == GameMode.timed)
                 Padding(
                   padding: AppSpacing.horizontalMd,
@@ -282,6 +287,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               padding: AppSpacing.screenPadding,
               child: Column(
                 children: [
+                  // Puzzle score header
+                  PuzzleScoreWidget(gameState: gameState),
+                  AppSpacing.vGapMd,
                   // Game grid
                   Expanded(
                     flex: 3,
@@ -463,7 +471,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 }
 
-class _CompletionDialog extends StatefulWidget {
+class _CompletionDialog extends ConsumerStatefulWidget {
   const _CompletionDialog({
     required this.gameState,
     required this.onHome,
@@ -475,41 +483,32 @@ class _CompletionDialog extends StatefulWidget {
   final VoidCallback onPlayAgain;
 
   @override
-  State<_CompletionDialog> createState() => _CompletionDialogState();
+  ConsumerState<_CompletionDialog> createState() => _CompletionDialogState();
 }
 
-class _CompletionDialogState extends State<_CompletionDialog>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _scoreController;
-  int _displayedScore = 0;
+class _CompletionDialogState extends ConsumerState<_CompletionDialog> {
+  bool _isNewHighScore = false;
+  bool _isPerfectGame = false;
 
   @override
   void initState() {
     super.initState();
-    _scoreController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
+    // Check for high score and perfect game
+    _checkAchievements();
+  }
+
+  Future<void> _checkAchievements() async {
+    final highScore = await ref.read(
+      highScoreProvider(widget.gameState.puzzle.difficulty).future,
     );
+    _isNewHighScore = highScore == null || widget.gameState.score > highScore;
     
-    _scoreController.addListener(() {
-      setState(() {
-        _displayedScore = (widget.gameState.score * _scoreController.value).round();
-      });
-    });
-    
-    _scoreController.forward();
-  }
-
-  @override
-  void dispose() {
-    _scoreController.dispose();
-    super.dispose();
-  }
-
-  String _formatTime(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+    // Calculate perfect game
+    _isPerfectGame = widget.gameState.hintsUsed == 0 &&
+        (widget.gameState.puzzle.gameMode != GameMode.timed ||
+            widget.gameState.puzzle.difficulty.timeLimit == 0 ||
+            widget.gameState.elapsedSeconds <
+                (widget.gameState.puzzle.difficulty.timeLimit * 0.3).round());
   }
 
   @override
@@ -519,47 +518,90 @@ class _CompletionDialogState extends State<_CompletionDialog>
           .animate()
           .fadeIn(duration: 300.ms)
           .scale(begin: const Offset(0.8, 0.8), duration: 300.ms, curve: Curves.elasticOut),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _StatRow(
-            label: 'Time',
-            value: _formatTime(widget.gameState.elapsedSeconds),
-          )
-              .animate()
-              .fadeIn(delay: 100.ms, duration: 300.ms)
-              .slideX(begin: -0.1),
-          AppSpacing.vGapSm,
-          _StatRow(
-            label: 'Score',
-            value: '$_displayedScore',
-            isHighlight: true,
-          )
-              .animate()
-              .fadeIn(delay: 200.ms, duration: 300.ms)
-              .scale(begin: const Offset(0.9, 0.9), duration: 300.ms, curve: Curves.elasticOut),
-          AppSpacing.vGapSm,
-          _StatRow(
-            label: 'Words Found',
-            value: '${widget.gameState.foundWords.length}/${widget.gameState.puzzle.words.length}',
-          )
-              .animate()
-              .fadeIn(delay: 300.ms, duration: 300.ms)
-              .slideX(begin: -0.1),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // For casual mode, only show score breakdown
+            if (widget.gameState.puzzle.gameMode == GameMode.casual) ...[
+              ScoreBreakdownWidget(gameState: widget.gameState)
+                  .animate()
+                  .fadeIn(delay: 200.ms, duration: 300.ms),
+            ] else ...[
+              // Perfect game or high score celebration (timed mode only)
+              if (_isPerfectGame || _isNewHighScore)
+                Container(
+                  padding: AppSpacing.cardPadding,
+                  margin: EdgeInsets.only(bottom: AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: _isPerfectGame
+                        ? AppColors.success.withValues(alpha: 0.1)
+                        : AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: AppSpacing.borderRadiusLg,
+                    border: Border.all(
+                      color: _isPerfectGame
+                          ? AppColors.success
+                          : AppColors.primary,
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _isPerfectGame ? '✨' : '🏆',
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                      AppSpacing.hGapSm,
+                      Text(
+                        _isPerfectGame
+                            ? 'Perfect Game!'
+                            : 'New High Score!',
+                        style: AppTypography.headlineSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: _isPerfectGame
+                              ? AppColors.success
+                              : AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    .animate()
+                    .fadeIn(delay: 50.ms, duration: 300.ms)
+                    .scale(begin: const Offset(0.9, 0.9), duration: 300.ms),
+              
+              // Score breakdown
+              ScoreBreakdownWidget(gameState: widget.gameState)
+                  .animate()
+                  .fadeIn(delay: 200.ms, duration: 300.ms),
+            ],
+          ],
+        ),
       ),
       actions: [
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SecondaryButton(
+              label: 'View Stats',
+              onPressed: () {
+                Navigator.pop(context);
+                context.push(AppRoutes.stats);
+              },
+              isFullWidth: false,
+            )
+                .animate()
+                .fadeIn(delay: 400.ms, duration: 300.ms),
+            AppSpacing.vGapSm,
+            SecondaryButton(
               label: 'Home',
               onPressed: widget.onHome,
               isFullWidth: false,
             )
                 .animate()
-                .fadeIn(delay: 400.ms, duration: 300.ms),
+                .fadeIn(delay: 500.ms, duration: 300.ms),
             AppSpacing.vGapSm,
             PrimaryButton(
               label: 'Play Again',
@@ -567,7 +609,7 @@ class _CompletionDialogState extends State<_CompletionDialog>
               isFullWidth: false,
             )
                 .animate()
-                .fadeIn(delay: 500.ms, duration: 300.ms)
+                .fadeIn(delay: 600.ms, duration: 300.ms)
                 .scale(begin: const Offset(0.9, 0.9), duration: 300.ms),
           ],
         ),
@@ -576,38 +618,3 @@ class _CompletionDialogState extends State<_CompletionDialog>
   }
 }
 
-class _StatRow extends StatelessWidget {
-  const _StatRow({
-    required this.label,
-    required this.value,
-    this.isHighlight = false,
-  });
-
-  final String label;
-  final String value;
-  final bool isHighlight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-        Text(
-          value,
-          style: isHighlight
-              ? AppTypography.titleLarge.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                )
-              : AppTypography.bodyLarge,
-        ),
-      ],
-    );
-  }
-}

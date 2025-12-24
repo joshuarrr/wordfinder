@@ -4,6 +4,8 @@ import '../../../../core/constants/app_constants.dart';
 import '../../data/datasources/puzzle_generator.dart';
 import '../../domain/entities/game_state.dart';
 import '../../domain/entities/puzzle.dart';
+import '../../../score/domain/entities/game_score.dart';
+import '../../../score/presentation/providers/score_providers.dart';
 
 part 'game_providers.g.dart';
 
@@ -304,6 +306,8 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
           final latestState = state.valueOrNull;
           if (latestState != null && latestState.isCelebrating) {
             state = AsyncData(latestState.copyWith(isCompleted: true));
+            // Save score when game completes
+            _saveScore(latestState.copyWith(isCompleted: true), ref);
           }
         });
       }
@@ -334,6 +338,8 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
         current.puzzle.difficulty.timeLimit > 0 &&
         seconds >= current.puzzle.difficulty.timeLimit) {
       newState = newState.copyWith(isCompleted: true);
+      // Save score when time runs out
+      _saveScore(newState, ref);
     }
 
     state = AsyncData(newState);
@@ -395,7 +401,65 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
       final latestState = state.valueOrNull;
       if (latestState != null && latestState.isCelebrating) {
         state = AsyncData(latestState.copyWith(isCompleted: true));
+        // Save score when game completes
+        _saveScore(latestState.copyWith(isCompleted: true), ref);
       }
     });
+  }
+
+  /// Save score when game completes
+  Future<void> _saveScore(GameState gameState, Ref ref) async {
+    if (!gameState.isCompleted) return;
+
+    // Calculate perfect game status
+    final isPerfectGame = _calculatePerfectGame(gameState);
+
+    // Create GameScore from GameState
+    final gameScore = GameScore(
+      score: gameState.score,
+      difficulty: gameState.puzzle.difficulty,
+      category: gameState.puzzle.category,
+      gameMode: gameState.puzzle.gameMode,
+      elapsedSeconds: gameState.elapsedSeconds,
+      wordsFound: gameState.foundWords.length,
+      totalWords: gameState.puzzle.words.length,
+      hintsUsed: gameState.hintsUsed,
+      completedAt: DateTime.now(),
+      isPerfectGame: isPerfectGame,
+    );
+
+    // Save score using repository
+    try {
+      final repositoryAsync = ref.read(scoreRepositoryProvider);
+      final repository = await repositoryAsync.value;
+      if (repository != null) {
+        await repository.saveScore(gameScore);
+      }
+
+      // Invalidate cumulative score provider to trigger update
+      // This will cause any widgets watching these providers to rebuild
+      ref.invalidate(cumulativeScoreProvider);
+      ref.invalidate(scoreStatsProvider);
+    } catch (e) {
+      // Handle error silently for now
+      // In production, you might want to log this
+    }
+  }
+
+  /// Calculate if game is perfect
+  bool _calculatePerfectGame(GameState gameState) {
+    // Must have no hints used
+    if (gameState.hintsUsed > 0) return false;
+
+    // For timed mode: completion time < 30% of time limit
+    if (gameState.puzzle.gameMode == GameMode.timed &&
+        gameState.puzzle.difficulty.timeLimit > 0) {
+      final timeLimit = gameState.puzzle.difficulty.timeLimit;
+      final threshold = (timeLimit * 0.3).round();
+      return gameState.elapsedSeconds < threshold;
+    }
+
+    // For casual mode: just no hints used
+    return true;
   }
 }
