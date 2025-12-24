@@ -72,6 +72,7 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
   }
 
   /// Add cell to selection path - recalculates entire path as a straight line
+  /// Supports dragging backwards to deselect letters
   void addToSelection(int row, int col) {
     final current = state.valueOrNull;
     if (current == null || current.isPaused || current.isCompleted) return;
@@ -83,19 +84,140 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
     final startPos = current.selectedPath.first;
     final endPos = (row, col);
     
-    // Same cell as start? Ignore
-    if (startPos == endPos) return;
+    // Same cell as start? Reset to just start
+    if (startPos == endPos) {
+      state = AsyncData(current.copyWith(
+        selectedPath: [startPos],
+        hasError: false,
+      ));
+      return;
+    }
 
     // Calculate the line from start to end
     final newPath = _calculateLinePath(startPos, endPos);
     
-    // Only update if we got a valid path
-    if (newPath != null && newPath.length > current.selectedPath.length) {
+    if (newPath == null) return; // Invalid path
+    
+    // Check if the new end is along the same line as current path
+    final currentPath = current.selectedPath;
+    final isSameLine = _isOnSameLine(currentPath, endPos);
+    
+    if (isSameLine) {
+      // Dragging along the same line - check if moving forward or backward
+      final currentEndIndex = currentPath.length - 1;
+      final newEndIndex = _findPositionInPath(currentPath, endPos);
+      
+      if (newEndIndex != null) {
+        // End position is already in the path - truncate to that point
+        if (newEndIndex < currentEndIndex) {
+          // Dragging backwards - truncate path
+          state = AsyncData(current.copyWith(
+            selectedPath: currentPath.sublist(0, newEndIndex + 1),
+            hasError: false,
+          ));
+        } else if (newEndIndex == currentEndIndex) {
+          // Same end position - no change needed
+          return;
+        }
+        // If newEndIndex > currentEndIndex, we'd extend, but that shouldn't happen
+        // since we're checking if it's in the path
+      } else {
+        // End position extends beyond current path - check if it's a valid extension
+        final direction = _getPathDirection(currentPath);
+        if (direction != null && _isValidExtension(currentPath, endPos, direction)) {
+          // Extend the path
+          final extendedPath = _extendPath(currentPath, endPos, direction);
+          if (extendedPath != null) {
+            state = AsyncData(current.copyWith(
+              selectedPath: extendedPath,
+              hasError: false,
+            ));
+          }
+        }
+      }
+    } else {
+      // Different line - recalculate from start to new end
+      // Allow both longer and shorter paths (user can drag backwards to a different line)
       state = AsyncData(current.copyWith(
         selectedPath: newPath,
         hasError: false,
       ));
     }
+  }
+  
+  /// Check if a position is on the same line as the current path
+  bool _isOnSameLine(List<(int, int)> path, (int, int) pos) {
+    if (path.length < 2) return false;
+    
+    final start = path.first;
+    final end = path.last;
+    
+    // Check if pos is on the line from start to end
+    final linePath = _calculateLinePath(start, end);
+    if (linePath == null) return false;
+    
+    return linePath.contains(pos);
+  }
+  
+  /// Find the index of a position in a path, or null if not found
+  int? _findPositionInPath(List<(int, int)> path, (int, int) pos) {
+    for (int i = 0; i < path.length; i++) {
+      if (path[i] == pos) return i;
+    }
+    return null;
+  }
+  
+  /// Get the direction vector of a path
+  (int, int)? _getPathDirection(List<(int, int)> path) {
+    if (path.length < 2) return null;
+    
+    final start = path.first;
+    final end = path.last;
+    
+    final rowDiff = end.$1 - start.$1;
+    final colDiff = end.$2 - start.$2;
+    
+    if (rowDiff == 0 && colDiff == 0) return null;
+    
+    final rowDir = rowDiff == 0 ? 0 : rowDiff ~/ rowDiff.abs();
+    final colDir = colDiff == 0 ? 0 : colDiff ~/ colDiff.abs();
+    
+    return (rowDir, colDir);
+  }
+  
+  /// Check if a position is a valid extension of the path in the given direction
+  bool _isValidExtension(List<(int, int)> path, (int, int) pos, (int, int) direction) {
+    if (path.isEmpty) return false;
+    
+    final last = path.last;
+    final (rowDir, colDir) = direction;
+    
+    // Check if pos is the next cell in the direction
+    final expectedRow = last.$1 + rowDir;
+    final expectedCol = last.$2 + colDir;
+    
+    return pos == (expectedRow, expectedCol);
+  }
+  
+  /// Extend a path to include a new end position
+  List<(int, int)>? _extendPath(List<(int, int)> path, (int, int) endPos, (int, int) direction) {
+    if (path.isEmpty) return null;
+    
+    final extended = List<(int, int)>.from(path);
+    final (rowDir, colDir) = direction;
+    
+    var current = path.last;
+    while (current != endPos) {
+      final nextRow = current.$1 + rowDir;
+      final nextCol = current.$2 + colDir;
+      current = (nextRow, nextCol);
+      extended.add(current);
+      
+      // Safety check to prevent infinite loops
+      if (extended.length > 100) return null;
+    }
+    
+    return extended;
   }
 
   /// Calculate a straight line path between two cells
