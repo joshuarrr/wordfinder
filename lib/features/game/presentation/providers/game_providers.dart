@@ -206,6 +206,14 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
     state = AsyncData(current.copyWith(isPaused: !current.isPaused));
   }
 
+  /// Clear the last found word (after animation completes)
+  void clearLastFoundWord() {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    
+    state = AsyncData(current.copyWith(lastFoundWord: null));
+  }
+
   /// Use a hint
   void useHint() {
     final current = state.valueOrNull;

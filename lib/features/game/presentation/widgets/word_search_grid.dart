@@ -34,6 +34,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
   (int, int)? _lastCell;
   final List<_ScorePopupData> _scorePopups = [];
   String? _flashingWord;
+  String? _pendingFlashWord; // Word waiting for line animation to complete
   double _currentCellSize = 40.0; // Default, will be updated
 
   @override
@@ -104,12 +105,16 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
           math.min(gridSize, availableHeight),
         );
         
-        // Handle new word found
-        if (gameState.lastFoundWord != null && 
-            gameState.lastFoundWord != _flashingWord) {
-          _flashingWord = gameState.lastFoundWord;
+        // Handle new word found - queue flash for after line animation
+        if (gameState.lastFoundWord != null) {
+          final wordToFlash = gameState.lastFoundWord!;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _showWordFoundCelebration(gameState.lastFoundWord!, puzzle, selectedPath, _currentCellSize);
+            if (mounted) {
+              setState(() => _pendingFlashWord = wordToFlash);
+              _showWordFoundCelebration(wordToFlash, puzzle, selectedPath, _currentCellSize);
+              // Clear lastFoundWord from state so we don't re-trigger
+              ref.read(gameStateProvider.notifier).clearLastFoundWord();
+            }
           });
         }
 
@@ -215,6 +220,15 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                         puzzle: puzzle,
                         foundWords: foundWords,
                         cellSize: _currentCellSize,
+                        onAnimationComplete: () {
+                          // After line animation, trigger the flash
+                          if (_pendingFlashWord != null && mounted) {
+                            setState(() {
+                              _flashingWord = _pendingFlashWord;
+                              _pendingFlashWord = null;
+                            });
+                          }
+                        },
                       ),
                     ),
                     // Flash animation for newly found word

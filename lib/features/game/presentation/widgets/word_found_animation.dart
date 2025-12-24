@@ -26,7 +26,7 @@ class WordFoundAnimation extends StatelessWidget {
         ),
         child: Container(),
       )
-          .animate(onPlay: (controller) => controller.repeat())
+          .animate()
           .fadeIn(duration: 150.ms)
           .then()
           .fadeOut(duration: 150.ms)

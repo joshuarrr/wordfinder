@@ -25,6 +25,11 @@ class _FoundWordOverlayState extends State<FoundWordOverlay>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  
+  /// Words that have completed their animation (drawn at full)
+  Set<String> _animatedWords = {};
+  /// The word currently being animated
+  String? _animatingWord;
 
   @override
   void initState() {
@@ -37,19 +42,39 @@ class _FoundWordOverlayState extends State<FoundWordOverlay>
       parent: _controller,
       curve: Curves.easeOutCubic,
     );
-    _controller.forward().then((_) {
-      widget.onAnimationComplete?.call();
-    });
+    
+    // Find any initial words to animate
+    if (widget.foundWords.isNotEmpty) {
+      _animatingWord = widget.foundWords.first;
+      _controller.forward().then((_) {
+        _onAnimationComplete();
+      });
+    }
+  }
+
+  void _onAnimationComplete() {
+    if (_animatingWord != null) {
+      setState(() {
+        _animatedWords = {..._animatedWords, _animatingWord!};
+        _animatingWord = null;
+      });
+    }
+    widget.onAnimationComplete?.call();
   }
 
   @override
   void didUpdateWidget(FoundWordOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If new words were found, restart animation
-    if (widget.foundWords.length > oldWidget.foundWords.length) {
+    // Find newly added words
+    final newWords = widget.foundWords.difference(oldWidget.foundWords);
+    if (newWords.isNotEmpty) {
+      // Animate only the new word
+      setState(() {
+        _animatingWord = newWords.first;
+      });
       _controller.reset();
       _controller.forward().then((_) {
-        widget.onAnimationComplete?.call();
+        _onAnimationComplete();
       });
     }
   }
@@ -72,6 +97,8 @@ class _FoundWordOverlayState extends State<FoundWordOverlay>
               wordPositions: widget.puzzle.words,
               cellSize: widget.cellSize,
               animationValue: _animation.value,
+              animatingWord: _animatingWord,
+              animatedWords: _animatedWords,
             ),
             child: Container(),
           );

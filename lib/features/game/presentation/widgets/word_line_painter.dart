@@ -9,12 +9,16 @@ class WordLinePainter extends CustomPainter {
     required this.wordPositions,
     required this.cellSize,
     required this.animationValue,
+    this.animatingWord,
+    this.animatedWords = const {},
   });
 
   final Set<String> foundWords;
   final List<WordPosition> wordPositions;
   final double cellSize;
   final double animationValue; // 0.0 to 1.0 for animation
+  final String? animatingWord; // The word currently being animated
+  final Set<String> animatedWords; // Words that have completed animation
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -29,11 +33,12 @@ class WordLinePainter extends CustomPainter {
       if (foundWords.contains(wordPos.word)) {
         final path = wordPos.getLinePath(cellSize, 2.0);
         
-        // Animate the line drawing
-        if (animationValue < 1.0) {
+        // Only animate the currently animating word
+        if (wordPos.word == animatingWord && animationValue < 1.0) {
           final animatedPath = _createAnimatedPath(path, animationValue);
           canvas.drawPath(animatedPath, paint);
-        } else {
+        } else if (animatedWords.contains(wordPos.word) || wordPos.word == animatingWord) {
+          // Draw completed words at full
           canvas.drawPath(path, paint);
         }
       }
@@ -62,7 +67,9 @@ class WordLinePainter extends CustomPainter {
   bool shouldRepaint(WordLinePainter oldDelegate) {
     return oldDelegate.foundWords != foundWords ||
         oldDelegate.animationValue != animationValue ||
-        oldDelegate.cellSize != cellSize;
+        oldDelegate.cellSize != cellSize ||
+        oldDelegate.animatingWord != animatingWord ||
+        oldDelegate.animatedWords != animatedWords;
   }
 }
 
