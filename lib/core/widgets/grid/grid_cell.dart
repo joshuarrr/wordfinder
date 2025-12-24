@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../theme/theme.dart';
@@ -13,6 +14,7 @@ class GridCell extends StatelessWidget {
     this.isFound = false,
     this.selectionColor,
     this.cellSize = 40,
+    this.isShaking = false,
   });
 
   final String letter;
@@ -22,14 +24,15 @@ class GridCell extends StatelessWidget {
   final bool isFound;
   final Color? selectionColor;
   final double cellSize;
+  final bool isShaking;
 
   @override
   Widget build(BuildContext context) {
     final backgroundColor = _getBackgroundColor();
     final textColor = _getTextColor();
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
+    Widget cell = AnimatedContainer(
+      duration: const Duration(milliseconds: 100),
       curve: Curves.easeOutCubic,
       width: cellSize,
       height: cellSize,
@@ -40,23 +43,35 @@ class GridCell extends StatelessWidget {
       ),
       child: Center(
         child: AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 150),
+          duration: const Duration(milliseconds: 100),
           style: AppTypography.gridLetter.copyWith(
             color: textColor,
             fontSize: cellSize * 0.5,
+            decoration: isFound ? TextDecoration.lineThrough : null,
+            decorationColor: AppColors.success,
+            decorationThickness: 2,
           ),
           child: Text(letter),
         ),
       ),
     );
+
+    // Apply shaking animation if needed
+    if (isShaking) {
+      cell = _ShakeWidget(child: cell);
+    }
+
+    return cell;
   }
 
   Color _getBackgroundColor() {
     if (isSelected) {
+      // Solid color background for selection
       return selectionColor ?? AppColors.primary;
     }
     if (isFound) {
-      return AppColors.surfaceVariant;
+      // Dimmed background for found words
+      return AppColors.surfaceVariant.withValues(alpha: 0.5);
     }
     return AppColors.surface;
   }
@@ -66,9 +81,65 @@ class GridCell extends StatelessWidget {
       return AppColors.letterSelected;
     }
     if (isFound) {
-      return AppColors.letterFound;
+      // Dimmed text color for found words
+      return AppColors.letterFound.withValues(alpha: 0.4);
     }
     return AppColors.letterDefault;
+  }
+}
+
+/// Shake animation widget
+class _ShakeWidget extends StatefulWidget {
+  const _ShakeWidget({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_ShakeWidget> createState() => _ShakeWidgetState();
+}
+
+class _ShakeWidgetState extends State<_ShakeWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+      ),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        // Shake with decreasing intensity
+        final progress = _animation.value;
+        final intensity = (1 - progress) * 8;
+        final shakeOffset = intensity * (math.sin(progress * math.pi * 10) * 0.5);
+        return Transform.translate(
+          offset: Offset(shakeOffset, 0),
+          child: widget.child,
+        );
+      },
+    );
   }
 }
 
@@ -121,4 +192,3 @@ class GridPreview extends StatelessWidget {
     );
   }
 }
-

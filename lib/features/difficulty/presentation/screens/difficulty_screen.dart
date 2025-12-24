@@ -69,8 +69,6 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
               Expanded(
                 child: _buildDifficultyList(),
               ),
-              AppSpacing.vGapMd,
-              _buildStartButton(),
             ],
           ),
         ),
@@ -103,7 +101,17 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             size: difficulty.gridSize,
             color: color,
           ),
-          onTap: () => setState(() => _selectedDifficulty = difficulty),
+          onTap: () {
+            // Auto-start game when difficulty is selected
+            context.push(
+              AppRoutes.game,
+              extra: {
+                'gameMode': widget.gameMode,
+                'category': widget.category,
+                'difficulty': difficulty,
+              },
+            );
+          },
         )
             .animate()
             .fadeIn(delay: 200.ms + delay, duration: 400.ms)
@@ -117,26 +125,5 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
     );
   }
 
-  Widget _buildStartButton() {
-    final isEnabled = _selectedDifficulty != null;
-
-    return PrimaryButton(
-      label: 'Start Game',
-      icon: Icons.play_arrow_rounded,
-      onPressed: isEnabled
-          ? () => context.push(
-                AppRoutes.game,
-                extra: {
-                  'gameMode': widget.gameMode,
-                  'category': widget.category,
-                  'difficulty': _selectedDifficulty,
-                },
-              )
-          : null,
-    )
-        .animate()
-        .fadeIn(delay: 600.ms, duration: 400.ms)
-        .slideY(begin: 0.2, curve: Curves.easeOutCubic);
-  }
 }
 
