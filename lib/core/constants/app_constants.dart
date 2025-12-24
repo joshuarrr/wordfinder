@@ -5,7 +5,7 @@ abstract final class AppConstants {
   // App info
   static const String appName = 'Word Finder';
   static const String appVersion = '1.0.0';
-  
+
   // Dev mode (only enabled in debug builds)
   static const bool devMode = kDebugMode;
 
@@ -29,9 +29,9 @@ abstract final class AppConstants {
 
   // Time limits (in seconds) - 0 means unlimited
   static const int timeLimitCasual = 0;
-  static const int timeLimitEasy = 180;    // 3 minutes
-  static const int timeLimitMedium = 300;  // 5 minutes
-  static const int timeLimitHard = 420;    // 7 minutes
+  static const int timeLimitEasy = 180; // 3 minutes
+  static const int timeLimitMedium = 300; // 5 minutes
+  static const int timeLimitHard = 420; // 7 minutes
 
   // Hints
   static const int hintsPerPuzzleEasy = 5;
@@ -55,13 +55,13 @@ abstract final class AppConstants {
 
   // Directions for word placement
   static const List<(int, int)> directions = [
-    (0, 1),   // Right
-    (0, -1),  // Left
-    (1, 0),   // Down
-    (-1, 0),  // Up
-    (1, 1),   // Down-Right (diagonal)
-    (1, -1),  // Down-Left (diagonal)
-    (-1, 1),  // Up-Right (diagonal)
+    (0, 1), // Right
+    (0, -1), // Left
+    (1, 0), // Down
+    (-1, 0), // Up
+    (1, 1), // Down-Right (diagonal)
+    (1, -1), // Down-Left (diagonal)
+    (-1, 1), // Up-Right (diagonal)
     (-1, -1), // Up-Left (diagonal)
   ];
 
@@ -122,16 +122,16 @@ enum Difficulty {
   final int maxWordLength;
 
   String get displayName => switch (this) {
-        Difficulty.easy => 'Easy',
-        Difficulty.medium => 'Medium',
-        Difficulty.hard => 'Hard',
-      };
+    Difficulty.easy => 'Easy',
+    Difficulty.medium => 'Medium',
+    Difficulty.hard => 'Hard',
+  };
 
   String get description => switch (this) {
-        Difficulty.easy => '${gridSize}x$gridSize grid • $wordCount words',
-        Difficulty.medium => '${gridSize}x$gridSize grid • $wordCount words',
-        Difficulty.hard => '${gridSize}x$gridSize grid • $wordCount words',
-      };
+    Difficulty.easy => '${gridSize}x$gridSize grid • $wordCount words',
+    Difficulty.medium => '${gridSize}x$gridSize grid • $wordCount words',
+    Difficulty.hard => '${gridSize}x$gridSize grid • $wordCount words',
+  };
 }
 
 /// Game modes
@@ -141,16 +141,16 @@ enum GameMode {
   daily;
 
   String get displayName => switch (this) {
-        GameMode.casual => 'Casual',
-        GameMode.timed => 'Timed',
-        GameMode.daily => 'Daily',
-      };
+    GameMode.casual => 'Casual',
+    GameMode.timed => 'Timed',
+    GameMode.daily => 'Daily',
+  };
 
   String get description => switch (this) {
-        GameMode.casual => 'Play at your own pace',
-        GameMode.timed => 'Race against the clock',
-        GameMode.daily => 'New puzzle every day',
-      };
+    GameMode.casual => 'Play at your own pace',
+    GameMode.timed => 'Race against the clock',
+    GameMode.daily => 'New puzzle every day',
+  };
 }
 
 /// Word categories
@@ -169,4 +169,3 @@ enum WordCategory {
   final String displayName;
   final String emoji;
 }
-
