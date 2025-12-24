@@ -54,7 +54,7 @@ class GameStateNotifier extends _$GameStateNotifier {
     );
   }
 
-  /// Add cell to selection path
+  /// Add cell to selection path - recalculates entire path as a straight line
   void addToSelection(int row, int col) {
     final current = state;
     if (current.isPaused || current.isCompleted) return;
@@ -63,45 +63,57 @@ class GameStateNotifier extends _$GameStateNotifier {
       return;
     }
 
-    final lastPos = current.selectedPath.last;
-    final newPos = (row, col);
+    final startPos = current.selectedPath.first;
+    final endPos = (row, col);
+    
+    // Same cell as start? Ignore
+    if (startPos == endPos) return;
 
-    // Check if the new position is adjacent and in a valid direction
-    if (_isValidNextCell(lastPos, newPos, current.selectedPath)) {
+    // Calculate the line from start to end
+    final newPath = _calculateLinePath(startPos, endPos);
+    
+    // Only update if we got a valid path
+    if (newPath != null && newPath.length > current.selectedPath.length) {
       state = current.copyWith(
-        selectedPath: [...current.selectedPath, newPos],
+        selectedPath: newPath,
         hasError: false,
       );
     }
   }
 
-  /// Check if a cell is a valid next cell in the selection
-  bool _isValidNextCell(
-    (int, int) lastPos,
-    (int, int) newPos,
-    List<(int, int)> currentPath,
-  ) {
-    final (lastRow, lastCol) = lastPos;
-    final (newRow, newCol) = newPos;
-
-    // Must be adjacent (including diagonal)
-    final rowDiff = (newRow - lastRow).abs();
-    final colDiff = (newCol - lastCol).abs();
+  /// Calculate a straight line path between two cells
+  /// Returns null if the cells don't form a valid line (horizontal, vertical, or 45° diagonal)
+  List<(int, int)>? _calculateLinePath((int, int) start, (int, int) end) {
+    final (startRow, startCol) = start;
+    final (endRow, endCol) = end;
     
-    if (rowDiff > 1 || colDiff > 1 || (rowDiff == 0 && colDiff == 0)) {
-      return false;
+    final rowDiff = endRow - startRow;
+    final colDiff = endCol - startCol;
+    
+    // Check if it's a valid straight line
+    // Valid: horizontal (rowDiff == 0), vertical (colDiff == 0), 
+    // or diagonal (|rowDiff| == |colDiff|)
+    if (rowDiff != 0 && colDiff != 0 && rowDiff.abs() != colDiff.abs()) {
+      return null; // Not a valid straight line
     }
-
-    // If path has more than one cell, must continue in same direction
-    if (currentPath.length > 1) {
-      final (prevRow, prevCol) = currentPath[currentPath.length - 2];
-      final prevDirection = (lastRow - prevRow, lastCol - prevCol);
-      final newDirection = (newRow - lastRow, newCol - lastCol);
-      
-      return prevDirection == newDirection;
+    
+    // Calculate direction
+    final rowDir = rowDiff == 0 ? 0 : rowDiff ~/ rowDiff.abs();
+    final colDir = colDiff == 0 ? 0 : colDiff ~/ colDiff.abs();
+    
+    // Build the path
+    final path = <(int, int)>[];
+    var currentRow = startRow;
+    var currentCol = startCol;
+    
+    while (true) {
+      path.add((currentRow, currentCol));
+      if (currentRow == endRow && currentCol == endCol) break;
+      currentRow += rowDir;
+      currentCol += colDir;
     }
-
-    return true;
+    
+    return path;
   }
 
   /// Clear selection
