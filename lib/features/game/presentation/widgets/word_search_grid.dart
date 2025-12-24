@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../domain/entities/game_state.dart';
 import '../../domain/entities/puzzle.dart';
 import '../providers/game_providers.dart';
 import 'found_word_overlay.dart';
@@ -37,13 +38,27 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
 
   @override
   Widget build(BuildContext context) {
-    final gameStateProvider = gameStateNotifierProvider(
+    final gameStateProvider = asyncGameStateNotifierProvider(
       difficulty: widget.difficulty,
       category: widget.category,
       gameMode: widget.gameMode,
     );
     
-    final gameState = ref.watch(gameStateProvider);
+    final asyncGameState = ref.watch(gameStateProvider);
+    
+    // Handle loading/error states
+    return asyncGameState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => Center(child: Text('Error: $e')),
+      data: (gameState) => _buildGrid(context, gameState, gameStateProvider),
+    );
+  }
+
+  Widget _buildGrid(
+    BuildContext context,
+    GameState gameState,
+    AsyncGameStateNotifierProvider gameStateProvider,
+  ) {
     final puzzle = gameState.puzzle;
     final selectedPath = gameState.selectedPath;
     final foundWords = gameState.foundWords;
@@ -310,7 +325,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     PointerDownEvent event,
     int gridSize,
     double cellSize,
-    GameStateNotifierProvider provider,
+    AsyncGameStateNotifierProvider provider,
   ) {
     final position = _getCellPosition(event.localPosition, gridSize, cellSize);
     if (position != null) {
@@ -326,7 +341,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     PointerMoveEvent event,
     int gridSize,
     double cellSize,
-    GameStateNotifierProvider provider,
+    AsyncGameStateNotifierProvider provider,
   ) {
     if (!_isDragging) return;
     
@@ -363,7 +378,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     }
   }
 
-  void _handlePointerUp(GameStateNotifierProvider provider) {
+  void _handlePointerUp(AsyncGameStateNotifierProvider provider) {
     if (_isDragging) {
       setState(() {
         _isDragging = false;
@@ -377,7 +392,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     DragStartDetails details,
     int gridSize,
     double cellSize,
-    GameStateNotifierProvider provider,
+    AsyncGameStateNotifierProvider provider,
   ) {
     final position = _getCellPosition(details.localPosition, gridSize, cellSize);
     if (position != null) {
@@ -393,7 +408,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     DragUpdateDetails details,
     int gridSize,
     double cellSize,
-    GameStateNotifierProvider provider,
+    AsyncGameStateNotifierProvider provider,
   ) {
     if (!_isDragging) return;
     
@@ -404,7 +419,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     }
   }
 
-  void _handlePanEnd(GameStateNotifierProvider provider) {
+  void _handlePanEnd(AsyncGameStateNotifierProvider provider) {
     if (_isDragging) {
       setState(() {
         _isDragging = false;

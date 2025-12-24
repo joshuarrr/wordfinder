@@ -18,8 +18,6 @@ dependencies:
   # Navigation
   go_router: ^14.6.2
   
-  # Typography
-  google_fonts: ^6.2.1
   
   # Animations
   flutter_animate: ^4.5.2

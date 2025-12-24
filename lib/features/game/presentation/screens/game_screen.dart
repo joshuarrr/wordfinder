@@ -33,22 +33,18 @@ class GameScreen extends ConsumerStatefulWidget {
 
 class _GameScreenState extends ConsumerState<GameScreen> {
   Timer? _timer;
-  late final GameStateNotifierProvider _gameStateProvider;
+  late final AsyncGameStateNotifierProvider _gameStateProvider;
   bool _showCompletionCelebration = false;
+  bool _timerStarted = false;
 
   @override
   void initState() {
     super.initState();
-    _gameStateProvider = gameStateNotifierProvider(
+    _gameStateProvider = asyncGameStateNotifierProvider(
       difficulty: widget.difficulty,
       category: widget.category,
       gameMode: widget.gameMode,
     );
-    
-    // Start timer for timed mode
-    if (widget.gameMode == GameMode.timed) {
-      _startTimer();
-    }
   }
 
   @override
@@ -58,9 +54,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   void _startTimer() {
+    if (_timerStarted) return;
+    _timerStarted = true;
+    
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final gameState = ref.read(_gameStateProvider);
-      if (gameState.isPaused || gameState.isCompleted) return;
+      final asyncState = ref.read(_gameStateProvider);
+      final gameState = asyncState.valueOrNull;
+      if (gameState == null || gameState.isPaused || gameState.isCompleted) return;
       
       ref.read(_gameStateProvider.notifier).updateElapsedTime(
         gameState.elapsedSeconds + 1,
@@ -75,7 +75,123 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gameState = ref.watch(_gameStateProvider);
+    final asyncGameState = ref.watch(_gameStateProvider);
+    
+    return asyncGameState.when(
+      loading: () => _buildLoadingScreen(),
+      error: (error, stack) => _buildErrorScreen(error),
+      data: (gameState) => _buildGameScreen(gameState),
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Animated puzzle icon
+              Text(
+                '🧩',
+                style: const TextStyle(fontSize: 64),
+              )
+                  .animate(onPlay: (c) => c.repeat())
+                  .rotate(duration: 2.seconds, curve: Curves.easeInOut)
+                  .scale(
+                    begin: const Offset(0.9, 0.9),
+                    end: const Offset(1.1, 1.1),
+                    duration: 1.seconds,
+                    curve: Curves.easeInOut,
+                  )
+                  .then()
+                  .scale(
+                    begin: const Offset(1.1, 1.1),
+                    end: const Offset(0.9, 0.9),
+                    duration: 1.seconds,
+                    curve: Curves.easeInOut,
+                  ),
+              AppSpacing.vGapXl,
+              Text(
+                'Building your puzzle...',
+                style: AppTypography.titleMedium,
+              )
+                  .animate()
+                  .fadeIn(duration: 300.ms),
+              AppSpacing.vGapMd,
+              SizedBox(
+                width: 200,
+                child: LinearProgressIndicator(
+                  backgroundColor: AppColors.surfaceVariant,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                )
+                    .animate()
+                    .fadeIn(delay: 200.ms, duration: 300.ms),
+              ),
+              AppSpacing.vGapMd,
+              Text(
+                '${widget.category.displayName} • ${widget.difficulty.displayName}',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              )
+                  .animate()
+                  .fadeIn(delay: 300.ms, duration: 300.ms),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorScreen(Object error) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: AppSpacing.screenPadding,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  '😕',
+                  style: TextStyle(fontSize: 64),
+                ),
+                AppSpacing.vGapLg,
+                Text(
+                  'Oops! Something went wrong',
+                  style: AppTypography.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
+                AppSpacing.vGapMd,
+                Text(
+                  'We couldn\'t generate your puzzle.\nPlease try again.',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                AppSpacing.vGapXl,
+                PrimaryButton(
+                  label: 'Go Back',
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: () => context.go(AppRoutes.home),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGameScreen(GameState gameState) {
+    // Start timer when game loads (for timed mode)
+    if (widget.gameMode == GameMode.timed && !_timerStarted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startTimer();
+      });
+    }
     
     // Show completion dialog when game is completed
     if (gameState.isCompleted && !_showCompletionCelebration) {
@@ -135,6 +251,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   if (widget.gameMode == GameMode.timed) {
                     if (gameState.isPaused) {
                       _timer?.cancel();
+                      _timerStarted = false;
                     } else {
                       _startTimer();
                     }
@@ -217,7 +334,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   void _showCompletionDialog() {
-    final gameState = ref.read(_gameStateProvider);
+    final asyncState = ref.read(_gameStateProvider);
+    final gameState = asyncState.valueOrNull;
+    if (gameState == null) return;
+    
     _timer?.cancel();
     
     // Show confetti first, then dialog

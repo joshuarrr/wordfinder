@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/theme.dart';
+import '../../domain/entities/game_state.dart';
 import '../providers/game_providers.dart';
 
 /// Widget displaying the list of words to find
@@ -21,16 +22,65 @@ class WordListWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final gameStateProvider = gameStateNotifierProvider(
+    final gameStateProvider = asyncGameStateNotifierProvider(
       difficulty: difficulty,
       category: category,
       gameMode: gameMode,
     );
     
-    final gameState = ref.watch(gameStateProvider);
+    final asyncGameState = ref.watch(gameStateProvider);
+    
+    return asyncGameState.when(
+      loading: () => _buildLoadingContainer(),
+      error: (e, st) => _buildErrorContainer(e),
+      data: (gameState) => _buildWordList(gameState),
+    );
+  }
+
+  Widget _buildLoadingContainer() {
+    return Container(
+      width: double.infinity,
+      padding: AppSpacing.paddingMd,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppSpacing.borderRadiusLg,
+        boxShadow: AppShadows.soft,
+      ),
+      child: Center(
+        child: Text(
+          'Loading words...',
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textHint,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorContainer(Object error) {
+    return Container(
+      width: double.infinity,
+      padding: AppSpacing.paddingMd,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppSpacing.borderRadiusLg,
+        boxShadow: AppShadows.soft,
+      ),
+      child: Center(
+        child: Text(
+          'Error loading words',
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.error,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWordList(GameState gameState) {
     final puzzle = gameState.puzzle;
     final foundWords = gameState.foundWords;
-
+    
     return Container(
       width: double.infinity,
       padding: AppSpacing.paddingMd,

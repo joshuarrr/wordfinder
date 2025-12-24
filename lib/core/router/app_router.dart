@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -5,10 +6,12 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/game/presentation/screens/game_screen.dart';
 import '../../features/category/presentation/screens/category_screen.dart';
 import '../../features/difficulty/presentation/screens/difficulty_screen.dart';
+import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../constants/app_constants.dart';
 
 /// Route paths
 abstract final class AppRoutes {
+  static const String splash = '/splash';
   static const String home = '/';
   static const String category = '/category';
   static const String difficulty = '/difficulty';
@@ -22,9 +25,21 @@ abstract final class AppRoutes {
 
 /// App router configuration
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.home,
-  debugLogDiagnostics: true,
+  // Web goes straight to home, iOS/Android get splash
+  initialLocation: kIsWeb ? AppRoutes.home : AppRoutes.splash,
+  debugLogDiagnostics: false,
   routes: [
+    // Splash screen (iOS/Android only)
+    GoRoute(
+      path: AppRoutes.splash,
+      name: 'splash',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const SplashScreen(),
+        transitionsBuilder: _fadeTransition,
+      ),
+    ),
+
     // Home screen
     GoRoute(
       path: AppRoutes.home,
@@ -84,13 +99,6 @@ final appRouter = GoRouter(
         );
       },
     ),
-
-    // TODO: Add remaining routes in later phases
-    // - Daily puzzle
-    // - Stats
-    // - Achievements
-    // - Leaderboard
-    // - Settings
   ],
 );
 
@@ -142,4 +150,3 @@ Widget _fadeScaleTransition(
     ),
   );
 }
-

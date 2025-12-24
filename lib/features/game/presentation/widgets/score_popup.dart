@@ -38,7 +38,8 @@ class _ScorePopupState extends State<ScorePopup> {
     return Positioned(
       left: widget.position.dx - 40,
       top: widget.position.dy - 30,
-      child: Material(
+      child: IgnorePointer(
+        child: Material(
         color: Colors.transparent,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -72,6 +73,7 @@ class _ScorePopupState extends State<ScorePopup> {
             .then()
             .fadeOut(duration: 300.ms)
             .slideY(begin: 0, end: -0.5, duration: 300.ms),
+        ),
       ),
     );
   }

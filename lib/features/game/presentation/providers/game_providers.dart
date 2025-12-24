@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../data/datasources/puzzle_generator.dart';
 import '../../domain/entities/game_state.dart';
+import '../../domain/entities/puzzle.dart';
 
 part 'game_providers.g.dart';
 
@@ -12,18 +13,34 @@ PuzzleGenerator puzzleGenerator(Ref ref) {
   return PuzzleGenerator();
 }
 
-/// Game state notifier
+/// Async provider for puzzle generation - runs in isolate to avoid blocking UI
 @riverpod
-class GameStateNotifier extends _$GameStateNotifier {
+Future<Puzzle> puzzleAsync(
+  Ref ref, {
+  required Difficulty difficulty,
+  required WordCategory category,
+  required GameMode gameMode,
+}) async {
+  final generator = PuzzleGenerator();
+  return generator.generateAsync(
+    difficulty: difficulty,
+    category: category,
+    gameMode: gameMode,
+  );
+}
+
+/// Async game state notifier - handles loading state properly
+@riverpod
+class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
   @override
-  GameState build({
+  Future<GameState> build({
     required Difficulty difficulty,
     required WordCategory category,
     required GameMode gameMode,
-  }) {
-    // Generate puzzle synchronously for now
+  }) async {
+    // Generate puzzle asynchronously in isolate
     final generator = PuzzleGenerator();
-    final puzzle = generator.generate(
+    final puzzle = await generator.generateAsync(
       difficulty: difficulty,
       category: category,
       gameMode: gameMode,
@@ -45,19 +62,19 @@ class GameStateNotifier extends _$GameStateNotifier {
 
   /// Start selection at a cell
   void startSelection(int row, int col) {
-    final current = state;
-    if (current.isPaused || current.isCompleted) return;
+    final current = state.valueOrNull;
+    if (current == null || current.isPaused || current.isCompleted) return;
     
-    state = current.copyWith(
+    state = AsyncData(current.copyWith(
       selectedPath: [(row, col)],
       hasError: false,
-    );
+    ));
   }
 
   /// Add cell to selection path - recalculates entire path as a straight line
   void addToSelection(int row, int col) {
-    final current = state;
-    if (current.isPaused || current.isCompleted) return;
+    final current = state.valueOrNull;
+    if (current == null || current.isPaused || current.isCompleted) return;
     if (current.selectedPath.isEmpty) {
       startSelection(row, col);
       return;
@@ -74,10 +91,10 @@ class GameStateNotifier extends _$GameStateNotifier {
     
     // Only update if we got a valid path
     if (newPath != null && newPath.length > current.selectedPath.length) {
-      state = current.copyWith(
+      state = AsyncData(current.copyWith(
         selectedPath: newPath,
         hasError: false,
-      );
+      ));
     }
   }
 
@@ -118,15 +135,20 @@ class GameStateNotifier extends _$GameStateNotifier {
 
   /// Clear selection
   void clearSelection() {
-    state = state.copyWith(
+    final current = state.valueOrNull;
+    if (current == null) return;
+    
+    state = AsyncData(current.copyWith(
       selectedPath: [],
       hasError: false,
-    );
+    ));
   }
 
   /// Validate and submit selection
   void submitSelection() {
-    final current = state;
+    final current = state.valueOrNull;
+    if (current == null) return;
+    
     if (current.selectedPath.length < 2) {
       clearSelection();
       return;
@@ -136,51 +158,59 @@ class GameStateNotifier extends _$GameStateNotifier {
     
     if (wordPosition != null && !current.foundWords.contains(wordPosition.word)) {
       // Word found!
-      state = current.copyWith(
+      state = AsyncData(current.copyWith(
         foundWords: {...current.foundWords, wordPosition.word},
         selectedPath: [],
         isCompleted: current.foundWords.length + 1 >= current.puzzle.words.length,
         hasError: false,
         lastFoundWord: wordPosition.word,
-      );
+      ));
     } else {
       // Invalid selection - trigger error state
-      state = current.copyWith(hasError: true);
+      state = AsyncData(current.copyWith(hasError: true));
       // Clear after shake animation
       Future.delayed(const Duration(milliseconds: 400), () {
-        final latestState = state;
-        state = latestState.copyWith(
-          selectedPath: [],
-          hasError: false,
-        );
+        final latestState = state.valueOrNull;
+        if (latestState != null) {
+          state = AsyncData(latestState.copyWith(
+            selectedPath: [],
+            hasError: false,
+          ));
+        }
       });
     }
   }
 
   /// Update elapsed time
   void updateElapsedTime(int seconds) {
-    final current = state;
-    if (current.isPaused || current.isCompleted) return;
+    final current = state.valueOrNull;
+    if (current == null || current.isPaused || current.isCompleted) return;
     
-    state = current.copyWith(elapsedSeconds: seconds);
+    var newState = current.copyWith(elapsedSeconds: seconds);
     
     // Check if time limit exceeded (for timed mode)
     if (current.puzzle.gameMode == GameMode.timed &&
         current.puzzle.difficulty.timeLimit > 0 &&
         seconds >= current.puzzle.difficulty.timeLimit) {
-      state = state.copyWith(isCompleted: true);
+      newState = newState.copyWith(isCompleted: true);
     }
+    
+    state = AsyncData(newState);
   }
 
   /// Toggle pause
   void togglePause() {
-    state = state.copyWith(isPaused: !state.isPaused);
+    final current = state.valueOrNull;
+    if (current == null) return;
+    
+    state = AsyncData(current.copyWith(isPaused: !current.isPaused));
   }
 
   /// Use a hint
   void useHint() {
-    final current = state;
-    if (current.isPaused || 
+    final current = state.valueOrNull;
+    if (current == null ||
+        current.isPaused || 
         current.isCompleted || 
         current.hintsUsed >= current.puzzle.difficulty.hints) {
       return;
@@ -191,6 +221,6 @@ class GameStateNotifier extends _$GameStateNotifier {
     if (remainingWords.isEmpty) return;
 
     // TODO: Implement hint logic (reveal first letter or highlight word)
-    state = current.copyWith(hintsUsed: current.hintsUsed + 1);
+    state = AsyncData(current.copyWith(hintsUsed: current.hintsUsed + 1));
   }
 }

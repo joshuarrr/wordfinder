@@ -62,19 +62,21 @@ class _FoundWordOverlayState extends State<FoundWordOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: WordLinePainter(
-            foundWords: widget.foundWords,
-            wordPositions: widget.puzzle.words,
-            cellSize: widget.cellSize,
-            animationValue: _animation.value,
-          ),
-          child: Container(),
-        );
-      },
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return CustomPaint(
+            painter: WordLinePainter(
+              foundWords: widget.foundWords,
+              wordPositions: widget.puzzle.words,
+              cellSize: widget.cellSize,
+              animationValue: _animation.value,
+            ),
+            child: Container(),
+          );
+        },
+      ),
     );
   }
 }

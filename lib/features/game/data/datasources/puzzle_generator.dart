@@ -1,15 +1,54 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../data/word_lists/word_lists.dart';
 import '../../domain/entities/puzzle.dart';
 import '../../domain/entities/word_position.dart';
 
+/// Parameters for puzzle generation (needed for compute isolate)
+class PuzzleGeneratorParams {
+  final Difficulty difficulty;
+  final WordCategory category;
+  final GameMode gameMode;
+
+  const PuzzleGeneratorParams({
+    required this.difficulty,
+    required this.category,
+    required this.gameMode,
+  });
+}
+
+/// Top-level function for compute isolate
+Puzzle generatePuzzleIsolate(PuzzleGeneratorParams params) {
+  return PuzzleGenerator()._generateSync(
+    difficulty: params.difficulty,
+    category: params.category,
+    gameMode: params.gameMode,
+  );
+}
+
 /// Generates word search puzzles
 class PuzzleGenerator {
   final Random _random = Random();
 
-  /// Generate a puzzle with the given parameters
-  Puzzle generate({
+  /// Generate a puzzle asynchronously in an isolate
+  Future<Puzzle> generateAsync({
+    required Difficulty difficulty,
+    required WordCategory category,
+    required GameMode gameMode,
+  }) {
+    return compute(
+      generatePuzzleIsolate,
+      PuzzleGeneratorParams(
+        difficulty: difficulty,
+        category: category,
+        gameMode: gameMode,
+      ),
+    );
+  }
+
+  /// Generate a puzzle synchronously (called from isolate)
+  Puzzle _generateSync({
     required Difficulty difficulty,
     required WordCategory category,
     required GameMode gameMode,

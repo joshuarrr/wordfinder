@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// Typography system using Nunito for a playful, rounded feel
-/// with Fredoka One for display/game elements
+/// Typography system using system fonts for instant rendering
 abstract final class AppTypography {
-  // Base font family
-  static String get _fontFamily => GoogleFonts.nunito().fontFamily!;
-  static String get _displayFontFamily => GoogleFonts.fredoka().fontFamily!;
+  // Use system fonts - no network delay
+  static const String _fontFamily = 'SF Pro Display';
+  static const String _displayFontFamily = 'SF Pro Rounded';
 
   // Display styles - for big headlines and game titles
-  static TextStyle get displayLarge => TextStyle(
+  static TextStyle get displayLarge => const TextStyle(
         fontFamily: _displayFontFamily,
         fontSize: 48,
         fontWeight: FontWeight.w700,
@@ -18,7 +16,7 @@ abstract final class AppTypography {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get displayMedium => TextStyle(
+  static TextStyle get displayMedium => const TextStyle(
         fontFamily: _displayFontFamily,
         fontSize: 36,
         fontWeight: FontWeight.w600,
@@ -26,7 +24,7 @@ abstract final class AppTypography {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get displaySmall => TextStyle(
+  static TextStyle get displaySmall => const TextStyle(
         fontFamily: _displayFontFamily,
         fontSize: 28,
         fontWeight: FontWeight.w500,
@@ -34,21 +32,21 @@ abstract final class AppTypography {
       );
 
   // Headline styles
-  static TextStyle get headlineLarge => TextStyle(
+  static TextStyle get headlineLarge => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 32,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get headlineMedium => TextStyle(
+  static TextStyle get headlineMedium => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 28,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get headlineSmall => TextStyle(
+  static TextStyle get headlineSmall => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 24,
         fontWeight: FontWeight.w600,
@@ -56,14 +54,14 @@ abstract final class AppTypography {
       );
 
   // Title styles
-  static TextStyle get titleLarge => TextStyle(
+  static TextStyle get titleLarge => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get titleMedium => TextStyle(
+  static TextStyle get titleMedium => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -71,7 +69,7 @@ abstract final class AppTypography {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get titleSmall => TextStyle(
+  static TextStyle get titleSmall => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w600,
@@ -80,7 +78,7 @@ abstract final class AppTypography {
       );
 
   // Body styles
-  static TextStyle get bodyLarge => TextStyle(
+  static TextStyle get bodyLarge => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 16,
         fontWeight: FontWeight.w400,
@@ -88,7 +86,7 @@ abstract final class AppTypography {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get bodyMedium => TextStyle(
+  static TextStyle get bodyMedium => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w400,
@@ -96,7 +94,7 @@ abstract final class AppTypography {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get bodySmall => TextStyle(
+  static TextStyle get bodySmall => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 12,
         fontWeight: FontWeight.w400,
@@ -105,7 +103,7 @@ abstract final class AppTypography {
       );
 
   // Label styles
-  static TextStyle get labelLarge => TextStyle(
+  static TextStyle get labelLarge => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w600,
@@ -113,7 +111,7 @@ abstract final class AppTypography {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get labelMedium => TextStyle(
+  static TextStyle get labelMedium => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 12,
         fontWeight: FontWeight.w600,
@@ -121,7 +119,7 @@ abstract final class AppTypography {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get labelSmall => TextStyle(
+  static TextStyle get labelSmall => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 11,
         fontWeight: FontWeight.w600,
@@ -130,14 +128,14 @@ abstract final class AppTypography {
       );
 
   // Game-specific styles
-  static TextStyle get gridLetter => TextStyle(
+  static TextStyle get gridLetter => const TextStyle(
         fontFamily: _displayFontFamily,
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: AppColors.letterDefault,
       );
 
-  static TextStyle get wordListItem => TextStyle(
+  static TextStyle get wordListItem => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 16,
         fontWeight: FontWeight.w600,
@@ -145,7 +143,7 @@ abstract final class AppTypography {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get wordListItemFound => TextStyle(
+  static TextStyle get wordListItemFound => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 16,
         fontWeight: FontWeight.w600,
@@ -156,21 +154,21 @@ abstract final class AppTypography {
         decorationThickness: 2,
       );
 
-  static TextStyle get timer => TextStyle(
+  static TextStyle get timer => const TextStyle(
         fontFamily: _displayFontFamily,
         fontSize: 32,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get score => TextStyle(
+  static TextStyle get score => const TextStyle(
         fontFamily: _displayFontFamily,
         fontSize: 48,
         fontWeight: FontWeight.w700,
         color: AppColors.primary,
       );
 
-  static TextStyle get button => TextStyle(
+  static TextStyle get button => const TextStyle(
         fontFamily: _fontFamily,
         fontSize: 16,
         fontWeight: FontWeight.w700,
@@ -196,4 +194,3 @@ abstract final class AppTypography {
         labelSmall: labelSmall,
       );
 }
-
