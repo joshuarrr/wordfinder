@@ -16,6 +16,7 @@ class GameState with _$GameState {
     required bool isPaused,
     required bool isCompleted,
     required bool hasError,
+    @Default(false) bool isCelebrating,
     DateTime? startedAt,
     String? lastFoundWord,
   }) = _GameState;

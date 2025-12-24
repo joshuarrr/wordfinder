@@ -25,6 +25,7 @@ mixin _$GameState {
   bool get isPaused => throw _privateConstructorUsedError;
   bool get isCompleted => throw _privateConstructorUsedError;
   bool get hasError => throw _privateConstructorUsedError;
+  bool get isCelebrating => throw _privateConstructorUsedError;
   DateTime? get startedAt => throw _privateConstructorUsedError;
   String? get lastFoundWord => throw _privateConstructorUsedError;
 
@@ -49,6 +50,7 @@ abstract class $GameStateCopyWith<$Res> {
     bool isPaused,
     bool isCompleted,
     bool hasError,
+    bool isCelebrating,
     DateTime? startedAt,
     String? lastFoundWord,
   });
@@ -77,6 +79,7 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
     Object? isPaused = null,
     Object? isCompleted = null,
     Object? hasError = null,
+    Object? isCelebrating = null,
     Object? startedAt = freezed,
     Object? lastFoundWord = freezed,
   }) {
@@ -114,6 +117,10 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
                 ? _value.hasError
                 : hasError // ignore: cast_nullable_to_non_nullable
                       as bool,
+            isCelebrating: null == isCelebrating
+                ? _value.isCelebrating
+                : isCelebrating // ignore: cast_nullable_to_non_nullable
+                      as bool,
             startedAt: freezed == startedAt
                 ? _value.startedAt
                 : startedAt // ignore: cast_nullable_to_non_nullable
@@ -146,6 +153,7 @@ abstract class _$$GameStateImplCopyWith<$Res>
     bool isPaused,
     bool isCompleted,
     bool hasError,
+    bool isCelebrating,
     DateTime? startedAt,
     String? lastFoundWord,
   });
@@ -173,6 +181,7 @@ class __$$GameStateImplCopyWithImpl<$Res>
     Object? isPaused = null,
     Object? isCompleted = null,
     Object? hasError = null,
+    Object? isCelebrating = null,
     Object? startedAt = freezed,
     Object? lastFoundWord = freezed,
   }) {
@@ -210,6 +219,10 @@ class __$$GameStateImplCopyWithImpl<$Res>
             ? _value.hasError
             : hasError // ignore: cast_nullable_to_non_nullable
                   as bool,
+        isCelebrating: null == isCelebrating
+            ? _value.isCelebrating
+            : isCelebrating // ignore: cast_nullable_to_non_nullable
+                  as bool,
         startedAt: freezed == startedAt
             ? _value.startedAt
             : startedAt // ignore: cast_nullable_to_non_nullable
@@ -235,6 +248,7 @@ class _$GameStateImpl extends _GameState {
     required this.isPaused,
     required this.isCompleted,
     required this.hasError,
+    this.isCelebrating = false,
     this.startedAt,
     this.lastFoundWord,
   }) : _foundWords = foundWords,
@@ -270,13 +284,16 @@ class _$GameStateImpl extends _GameState {
   @override
   final bool hasError;
   @override
+  @JsonKey()
+  final bool isCelebrating;
+  @override
   final DateTime? startedAt;
   @override
   final String? lastFoundWord;
 
   @override
   String toString() {
-    return 'GameState(puzzle: $puzzle, foundWords: $foundWords, selectedPath: $selectedPath, elapsedSeconds: $elapsedSeconds, hintsUsed: $hintsUsed, isPaused: $isPaused, isCompleted: $isCompleted, hasError: $hasError, startedAt: $startedAt, lastFoundWord: $lastFoundWord)';
+    return 'GameState(puzzle: $puzzle, foundWords: $foundWords, selectedPath: $selectedPath, elapsedSeconds: $elapsedSeconds, hintsUsed: $hintsUsed, isPaused: $isPaused, isCompleted: $isCompleted, hasError: $hasError, isCelebrating: $isCelebrating, startedAt: $startedAt, lastFoundWord: $lastFoundWord)';
   }
 
   @override
@@ -303,6 +320,8 @@ class _$GameStateImpl extends _GameState {
                 other.isCompleted == isCompleted) &&
             (identical(other.hasError, hasError) ||
                 other.hasError == hasError) &&
+            (identical(other.isCelebrating, isCelebrating) ||
+                other.isCelebrating == isCelebrating) &&
             (identical(other.startedAt, startedAt) ||
                 other.startedAt == startedAt) &&
             (identical(other.lastFoundWord, lastFoundWord) ||
@@ -320,6 +339,7 @@ class _$GameStateImpl extends _GameState {
     isPaused,
     isCompleted,
     hasError,
+    isCelebrating,
     startedAt,
     lastFoundWord,
   );
@@ -343,6 +363,7 @@ abstract class _GameState extends GameState {
     required final bool isPaused,
     required final bool isCompleted,
     required final bool hasError,
+    final bool isCelebrating,
     final DateTime? startedAt,
     final String? lastFoundWord,
   }) = _$GameStateImpl;
@@ -364,6 +385,8 @@ abstract class _GameState extends GameState {
   bool get isCompleted;
   @override
   bool get hasError;
+  @override
+  bool get isCelebrating;
   @override
   DateTime? get startedAt;
   @override

@@ -64,6 +64,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     final selectedPath = gameState.selectedPath;
     final foundWords = gameState.foundWords;
     final hasError = gameState.hasError;
+    final isCelebrating = gameState.isCelebrating;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -111,7 +112,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               setState(() => _pendingFlashWord = wordToFlash);
-              _showWordFoundCelebration(wordToFlash, puzzle, selectedPath, _currentCellSize);
+              _showWordFoundCelebration(wordToFlash, puzzle, _currentCellSize);
               // Clear lastFoundWord from state so we don't re-trigger
               ref.read(gameStateProvider.notifier).clearLastFoundWord();
             }
@@ -128,131 +129,138 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
             child: SizedBox(
               width: constrainedGridSize,
               height: constrainedGridSize,
-              child: ClipRRect(
-                borderRadius: AppSpacing.borderRadiusMd,
-                child: Stack(
-                  children: [
-                    // Grid
-                    Listener(
-                      onPointerDown: (event) {
-                        _handlePointerDown(event, puzzle.size, _currentCellSize, gameStateProvider);
-                      },
-                      onPointerMove: (event) {
-                        if (_isDragging) {
-                          _handlePointerMove(event, puzzle.size, _currentCellSize, gameStateProvider);
-                        }
-                      },
-                      onPointerUp: (event) {
-                        _handlePointerUp(gameStateProvider);
-                      },
-                      onPointerCancel: (event) {
-                        _handlePointerUp(gameStateProvider);
-                      },
-                      child: GestureDetector(
-                        // Fallback for mobile
-                        onPanStart: (details) {
-                          _handlePanStart(details, puzzle.size, _currentCellSize, gameStateProvider);
-                        },
-                        onPanUpdate: (details) {
-                          _handlePanUpdate(details, puzzle.size, _currentCellSize, gameStateProvider);
-                        },
-                        onPanEnd: (_) {
-                          _handlePanEnd(gameStateProvider);
-                        },
-                        child: Container(
-                          width: constrainedGridSize,
-                          height: constrainedGridSize,
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: AppSpacing.borderRadiusMd,
-                            border: Border.all(color: AppColors.gridLine, width: 2),
-                          ),
-                          padding: const EdgeInsets.all(padding),
-                          child: LayoutBuilder(
-                            builder: (context, innerConstraints) {
-                              // Calculate cell size based on inner constraints
-                              final innerWidth = innerConstraints.maxWidth;
-                              final innerHeight = innerConstraints.maxHeight;
-                              final cellArea = math.min(innerWidth, innerHeight);
-                              
-                              // Recalculate cell size to fit exactly
-                              // For N cells: cellArea = N * (cellSize + margin*2)
-                              // So: cellSize = (cellArea / N) - margin*2
-                              final exactCellSize = (cellArea / puzzle.size) - (margin * 2);
-                              final finalCellSize = exactCellSize.clamp(24.0, 60.0);
-                              
-                              // Update current cell size for handlers
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted && _currentCellSize != finalCellSize) {
-                                  setState(() => _currentCellSize = finalCellSize);
-                                }
-                              });
-                              
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: List.generate(
-                                  puzzle.size,
-                                  (row) => Row(
+              // Outer stack with no clipping for score popups
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Grid with clipping
+                  ClipRRect(
+                    borderRadius: AppSpacing.borderRadiusMd,
+                    child: Stack(
+                      children: [
+                        // Grid
+                        Listener(
+                          onPointerDown: (event) {
+                            _handlePointerDown(event, puzzle.size, _currentCellSize, gameStateProvider);
+                          },
+                          onPointerMove: (event) {
+                            if (_isDragging) {
+                              _handlePointerMove(event, puzzle.size, _currentCellSize, gameStateProvider);
+                            }
+                          },
+                          onPointerUp: (event) {
+                            _handlePointerUp(gameStateProvider);
+                          },
+                          onPointerCancel: (event) {
+                            _handlePointerUp(gameStateProvider);
+                          },
+                          child: GestureDetector(
+                            // Fallback for mobile
+                            onPanStart: (details) {
+                              _handlePanStart(details, puzzle.size, _currentCellSize, gameStateProvider);
+                            },
+                            onPanUpdate: (details) {
+                              _handlePanUpdate(details, puzzle.size, _currentCellSize, gameStateProvider);
+                            },
+                            onPanEnd: (_) {
+                              _handlePanEnd(gameStateProvider);
+                            },
+                            child: Container(
+                              width: constrainedGridSize,
+                              height: constrainedGridSize,
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: AppSpacing.borderRadiusMd,
+                                border: Border.all(color: AppColors.gridLine, width: 2),
+                              ),
+                              padding: const EdgeInsets.all(padding),
+                              child: LayoutBuilder(
+                                builder: (context, innerConstraints) {
+                                  // Calculate cell size based on inner constraints
+                                  final innerWidth = innerConstraints.maxWidth;
+                                  final innerHeight = innerConstraints.maxHeight;
+                                  final cellArea = math.min(innerWidth, innerHeight);
+                                  
+                                  // Recalculate cell size to fit exactly
+                                  // For N cells: cellArea = N * (cellSize + margin*2)
+                                  // So: cellSize = (cellArea / N) - margin*2
+                                  final exactCellSize = (cellArea / puzzle.size) - (margin * 2);
+                                  final finalCellSize = exactCellSize.clamp(24.0, 60.0);
+                                  
+                                  // Update current cell size for handlers
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted && _currentCellSize != finalCellSize) {
+                                      setState(() => _currentCellSize = finalCellSize);
+                                    }
+                                  });
+                                  
+                                  return Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: List.generate(
                                       puzzle.size,
-                                      (col) => _buildCell(
-                                        row,
-                                        col,
-                                        puzzle,
-                                        selectedPath,
-                                        foundWords,
-                                        hasError,
-                                        finalCellSize,
+                                      (row) => Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: List.generate(
+                                          puzzle.size,
+                                          (col) => _buildCell(
+                                            row,
+                                            col,
+                                            puzzle,
+                                            selectedPath,
+                                            foundWords,
+                                            hasError,
+                                            isCelebrating,
+                                            finalCellSize,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              );
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Found word overlay (lines)
+                        Positioned.fill(
+                          child: FoundWordOverlay(
+                            puzzle: puzzle,
+                            foundWords: foundWords,
+                            cellSize: _currentCellSize,
+                            onAnimationComplete: () {
+                              // After line animation, trigger the flash
+                              if (_pendingFlashWord != null && mounted) {
+                                setState(() {
+                                  _flashingWord = _pendingFlashWord;
+                                  _pendingFlashWord = null;
+                                });
+                              }
                             },
                           ),
                         ),
-                      ),
+                        // Flash animation for newly found word
+                        if (_flashingWord != null)
+                          Positioned.fill(
+                            child: WordFoundAnimation(
+                              wordPosition: puzzle.getWordPosition(_flashingWord!)!,
+                              cellSize: _currentCellSize,
+                              onComplete: () {
+                                setState(() => _flashingWord = null);
+                              },
+                            ),
+                          ),
+                      ],
                     ),
-                    // Found word overlay (lines)
-                    Positioned.fill(
-                      child: FoundWordOverlay(
-                        puzzle: puzzle,
-                        foundWords: foundWords,
-                        cellSize: _currentCellSize,
-                        onAnimationComplete: () {
-                          // After line animation, trigger the flash
-                          if (_pendingFlashWord != null && mounted) {
-                            setState(() {
-                              _flashingWord = _pendingFlashWord;
-                              _pendingFlashWord = null;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                    // Flash animation for newly found word
-                    if (_flashingWord != null)
-                      Positioned.fill(
-                        child: WordFoundAnimation(
-                          wordPosition: puzzle.getWordPosition(_flashingWord!)!,
-                          cellSize: _currentCellSize,
-                          onComplete: () {
-                            setState(() => _flashingWord = null);
-                          },
-                        ),
-                      ),
-                    // Score popups
-                    ..._scorePopups.map((popup) => ScorePopup(
-                      word: popup.word,
-                      score: popup.score,
-                      position: popup.position,
-                      onComplete: () {
-                        setState(() => _scorePopups.remove(popup));
-                      },
-                    )),
-                  ],
-                ),
+                  ),
+                  // Score popups (outside ClipRRect so they can overflow)
+                  ..._scorePopups.map((popup) => ScorePopup(
+                    score: popup.score,
+                    position: popup.position,
+                    onComplete: () {
+                      setState(() => _scorePopups.remove(popup));
+                    },
+                  )),
+                ],
               ),
             ),
           ),
@@ -264,13 +272,14 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
   void _showWordFoundCelebration(
     String word,
     Puzzle puzzle,
-    List<(int, int)> selectedPath,
     double cellSize,
   ) {
-    if (selectedPath.isEmpty) return;
+    // Get the word position from puzzle
+    final wordPosition = puzzle.getWordPosition(word);
+    if (wordPosition == null) return;
     
-    // Calculate position for score popup (center of selection)
-    final firstCell = selectedPath.first;
+    // Calculate position for score popup (center of first cell)
+    final firstCell = wordPosition.cells.first;
     const padding = 4.0;
     const border = 2.0;
     const margin = 2.0;
@@ -282,7 +291,6 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     
     setState(() {
       _scorePopups.add(_ScorePopupData(
-        word: word,
         score: AppConstants.basePointsPerWord,
         position: Offset(x, y),
       ));
@@ -296,6 +304,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     List<(int, int)> selectedPath,
     Set<String> foundWords,
     bool hasError,
+    bool isCelebrating,
     double cellSize,
   ) {
     final letter = puzzle.getLetter(row, col);
@@ -317,6 +326,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
         col: col,
         isSelected: isSelected,
         isFound: isFound,
+        isCelebrating: isCelebrating,
         isShaking: isShaking,
         selectionColor: selectionColor,
         cellSize: cellSize,
@@ -479,12 +489,10 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
 
 class _ScorePopupData {
   _ScorePopupData({
-    required this.word,
     required this.score,
     required this.position,
   });
 
-  final String word;
   final int score;
   final Offset position;
 }

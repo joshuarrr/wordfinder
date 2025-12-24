@@ -81,6 +81,15 @@ abstract final class AppShadows {
         ),
       ];
 
+  // Celebration cell glow (green success)
+  static List<BoxShadow> get cellCelebration => [
+        BoxShadow(
+          color: AppColors.success.withValues(alpha: 0.6),
+          blurRadius: 12,
+          spreadRadius: 2,
+        ),
+      ];
+
   // No shadow
   static List<BoxShadow> get none => [];
 }
