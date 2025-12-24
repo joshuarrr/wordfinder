@@ -65,8 +65,10 @@ class PuzzleGenerator {
     final maxWordLength = gridSize;
     final preferredMaxLength = (gridSize * 0.8).ceil(); // Prefer words up to 80% of grid size
     
+    // Filter and deduplicate words - ensure each word appears only once
     final availableWords = allWords
         .where((word) => word.length <= maxWordLength && word.length >= 3) // At least 3 letters
+        .toSet() // Remove duplicates
         .toList()
       ..shuffle(_random);
     
