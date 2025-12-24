@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -37,6 +38,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   bool _showCompletionCelebration = false;
   bool _timerStarted = false;
   bool _completionDialogShown = false;
+  bool _isRestarting = false;
 
   @override
   void initState() {
@@ -195,9 +197,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     }
     
     // Show completion dialog when game is completed
-    if (gameState.isCompleted && !_showCompletionCelebration && !_completionDialogShown) {
+    // Don't show if we're in the middle of restarting
+    if (gameState.isCompleted && !_showCompletionCelebration && !_completionDialogShown && !_isRestarting) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!_completionDialogShown && mounted) {
+        if (!_completionDialogShown && !_isRestarting && mounted) {
           setState(() => _showCompletionCelebration = true);
           _showCompletionDialog();
         }
@@ -345,9 +348,35 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     );
   }
 
+  void _restartGame() {
+    // Set restarting flag to prevent dialog from showing during transition
+    setState(() {
+      _isRestarting = true;
+      _completionDialogShown = false;
+      _timerStarted = false;
+      _showCompletionCelebration = false;
+    });
+    
+    // Cancel timer
+    _timer?.cancel();
+    _timer = null;
+    
+    // Invalidate the provider to generate a new puzzle
+    ref.invalidate(_gameStateProvider);
+    
+    // Reset restarting flag after a brief delay to allow new state to load
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        setState(() {
+          _isRestarting = false;
+        });
+      }
+    });
+  }
+
   void _showCompletionDialog() {
-    // Prevent multiple dialogs from showing
-    if (_completionDialogShown) return;
+    // Prevent multiple dialogs from showing or showing during restart
+    if (_completionDialogShown || _isRestarting) return;
     
     final asyncState = ref.read(_gameStateProvider);
     final gameState = asyncState.valueOrNull;
@@ -356,27 +385,78 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     _completionDialogShown = true;
     _timer?.cancel();
     
+    // Pick a random bright happy color for the barrier
+    final random = math.Random();
+    final brightColors = [
+      AppColors.primary,
+      AppColors.secondary,
+      AppColors.accent1,
+      AppColors.accent2,
+      AppColors.accent3,
+      AppColors.accent4,
+      AppColors.accent5,
+      AppColors.accent6,
+      AppColors.success,
+    ];
+    final barrierColor = brightColors[random.nextInt(brightColors.length)]
+        .withOpacity(0.7); // Semi-transparent for visibility
+    
     // Show confetti first, then dialog
     Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
       
       // Double-check that dialog hasn't been shown already
       if (_completionDialogShown) {
-        showDialog(
+        showGeneralDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => _CompletionDialog(
-            gameState: gameState,
-            onHome: () {
-              Navigator.pop(context);
-              context.go(AppRoutes.home);
-            },
-            onPlayAgain: () {
-              Navigator.pop(context);
-              context.go(AppRoutes.home);
-              // TODO: Implement proper restart
-            },
-          ),
+          barrierColor: Colors.transparent, // Start transparent, will fade in
+          transitionDuration: const Duration(milliseconds: 300),
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return _CompletionDialog(
+              gameState: gameState,
+              onHome: () {
+                Navigator.pop(context);
+                context.go(AppRoutes.home);
+              },
+              onPlayAgain: () {
+                Navigator.pop(context);
+                _restartGame();
+              },
+            );
+          },
+          transitionBuilder: (context, animation, secondaryAnimation, child) {
+            // Fade in the barrier color
+            final barrierAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeIn),
+            );
+            
+            return Stack(
+              children: [
+                // Animated barrier covering entire screen
+                Positioned.fill(
+                  child: FadeTransition(
+                    opacity: barrierAnimation,
+                    child: Container(
+                      color: barrierColor,
+                    ),
+                  ),
+                ),
+                // Dialog content with fade and scale animation
+                Center(
+                  child: FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+                        CurvedAnimation(parent: animation, curve: Curves.elasticOut),
+                      ),
+                      child: child,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       }
     });
@@ -470,20 +550,27 @@ class _CompletionDialogState extends State<_CompletionDialog>
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: widget.onHome,
-          child: const Text('Home'),
-        )
-            .animate()
-            .fadeIn(delay: 400.ms, duration: 300.ms),
-        PrimaryButton(
-          label: 'Play Again',
-          onPressed: widget.onPlayAgain,
-          isFullWidth: false,
-        )
-            .animate()
-            .fadeIn(delay: 500.ms, duration: 300.ms)
-            .scale(begin: const Offset(0.9, 0.9), duration: 300.ms),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SecondaryButton(
+              label: 'Home',
+              onPressed: widget.onHome,
+              isFullWidth: false,
+            )
+                .animate()
+                .fadeIn(delay: 400.ms, duration: 300.ms),
+            AppSpacing.vGapSm,
+            PrimaryButton(
+              label: 'Play Again',
+              onPressed: widget.onPlayAgain,
+              isFullWidth: false,
+            )
+                .animate()
+                .fadeIn(delay: 500.ms, duration: 300.ms)
+                .scale(begin: const Offset(0.9, 0.9), duration: 300.ms),
+          ],
+        ),
       ],
     );
   }
