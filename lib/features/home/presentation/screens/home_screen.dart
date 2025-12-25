@@ -125,7 +125,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           label: 'Play',
           icon: Icons.play_arrow_rounded,
           onPressed: () {
+            print('Button pressed - calling playButtonClick');
             audioService.playButtonClick();
+            print('After playButtonClick call');
             context.push(
               AppRoutes.category,
               extra: GameMode.casual,
@@ -141,7 +143,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           label: 'Timed Challenge',
           icon: Icons.timer_outlined,
           onPressed: () {
+            print('Timed button pressed - calling playButtonClick');
             audioService.playButtonClick();
+            print('After playButtonClick call');
             context.push(
               AppRoutes.category,
               extra: GameMode.timed,
@@ -169,7 +173,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     
     return GameCard(
       onTap: () {
+        print('Daily puzzle tapped - calling playButtonClick');
         audioService.playButtonClick();
+        print('After playButtonClick call');
         context.push(AppRoutes.daily);
       },
       color: isCompleted 
