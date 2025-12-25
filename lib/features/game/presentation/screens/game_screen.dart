@@ -351,7 +351,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.go(AppRoutes.home);
+              context.pop();
             },
             child: Text('Exit', style: TextStyle(color: AppColors.error)),
           ),

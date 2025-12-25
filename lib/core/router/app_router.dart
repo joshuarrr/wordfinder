@@ -94,7 +94,7 @@ final appRouter = GoRouter(
             category: args?['category'] as WordCategory? ?? WordCategory.animals,
             difficulty: args?['difficulty'] as Difficulty? ?? Difficulty.easy,
           ),
-          transitionsBuilder: _fadeScaleTransition,
+          transitionsBuilder: _pushTransition,
         );
       },
     ),

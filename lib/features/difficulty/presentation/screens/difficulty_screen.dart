@@ -59,13 +59,13 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
               AppSpacing.vGapXs,
               Text(
                 'Choose how challenging you want it',
-                style: AppTypography.bodyMedium.copyWith(
+                style: AppTypography.bodyLarge.copyWith(
                   color: AppColors.textSecondary,
                 ),
               )
                   .animate()
                   .fadeIn(delay: 100.ms, duration: 400.ms),
-              AppSpacing.vGapXl,
+              AppSpacing.vGapLg,
               Expanded(
                 child: _buildDifficultyList(),
               ),
@@ -87,7 +87,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
 
     return ListView.separated(
       itemCount: difficulties.length,
-      separatorBuilder: (_, __) => AppSpacing.vGapMd,
+      separatorBuilder: (_, __) => AppSpacing.vGapSm,
       itemBuilder: (context, index) {
         final difficulty = difficulties[index];
         final color = colors[index];
@@ -101,6 +101,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
           gridPreview: GridPreview(
             size: difficulty.gridSize,
             color: color,
+            cellSize: 12,
           ),
           onTap: () {
             // Auto-start game when difficulty is selected

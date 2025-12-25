@@ -171,33 +171,55 @@ class _DifficultyCardState extends State<DifficultyCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutCubic,
-        padding: AppSpacing.cardPaddingLarge,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
         decoration: BoxDecoration(
-          color: widget.isSelected ? color.withValues(alpha: 0.1) : AppColors.surface,
+          color: widget.isSelected 
+              ? color.withValues(alpha: 0.15) 
+              : color.withValues(alpha: 0.05),
           borderRadius: AppSpacing.borderRadiusLg,
           border: Border.all(
             color: widget.isSelected ? color : AppColors.divider,
             width: widget.isSelected ? 2 : 1,
           ),
-          boxShadow: _isPressed ? AppShadows.soft : AppShadows.medium,
+          boxShadow: const [],
         ),
         transform: _isPressed
             ? (Matrix4.identity()..setEntry(0, 0, 0.98)..setEntry(1, 1, 0.98)..setEntry(2, 2, 0.98))
             : Matrix4.identity(),
-        child: Column(
+        child: Row(
           children: [
-            widget.gridPreview,
-            AppSpacing.vGapMd,
-            Text(
-              widget.title,
-              style: AppTypography.titleLarge.copyWith(
-                color: widget.isSelected ? color : AppColors.textPrimary,
-              ),
+            // Grid preview on the left
+            SizedBox(
+              width: 120,
+              height: 120,
+              child: Center(child: widget.gridPreview),
             ),
-            AppSpacing.vGapXxs,
-            Text(
-              widget.subtitle,
-              style: AppTypography.bodySmall,
+            AppSpacing.hGapLg,
+            // Text content on the right
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.title,
+                    style: AppTypography.headlineSmall.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: widget.isSelected ? color : AppColors.textPrimary,
+                    ),
+                  ),
+                  AppSpacing.vGapXs,
+                  Text(
+                    widget.subtitle,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

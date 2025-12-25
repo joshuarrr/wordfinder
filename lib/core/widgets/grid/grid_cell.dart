@@ -243,39 +243,98 @@ class GridPreview extends StatelessWidget {
   final double cellSize;
   final Color? color;
 
+  // Generate random letters for preview
+  static const String _letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  
+  String _getRandomLetter(int row, int col) {
+    // Use a better hash function for more random-looking distribution
+    // Combine row, col, and grid size for better randomization
+    var hash = (row * 31 + col * 17 + size * 7);
+    hash = hash ^ (hash >> 16);
+    hash = hash * 0x85ebca6b;
+    hash = hash ^ (hash >> 13);
+    hash = hash * 0xc2b2ae35;
+    hash = hash ^ (hash >> 16);
+    final seed = hash.abs() % _letters.length;
+    return _letters[seed];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? AppColors.primary;
+    // Show the actual grid size (8x8, 12x12, 15x15)
+    final previewSize = size;
+    final cellMargin = 0.5;
+    final containerPadding = 4.0;
+    final borderWidth = color != null ? 2.0 : 0.0;
 
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: AppSpacing.borderRadiusSm,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(
-          size.clamp(0, 6), // Max 6 rows for preview
-          (row) => Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate cell size to fit within available space
+        // Available space = constraints.maxWidth - (padding * 2) - (border * 2)
+        // Each cell takes: actualCellSize + (cellMargin * 2)
+        // Total width needed: (actualCellSize + cellMargin * 2) * previewSize
+        // Solve for actualCellSize: (availableWidth / previewSize) - (cellMargin * 2)
+        final availableWidth = constraints.maxWidth - (containerPadding * 2) - (borderWidth * 2);
+        final availableHeight = constraints.maxHeight - (containerPadding * 2) - (borderWidth * 2);
+        final actualCellSize = math.max(4.0, math.min(
+          (availableWidth / previewSize) - (cellMargin * 2),
+          (availableHeight / previewSize) - (cellMargin * 2),
+        )).toDouble();
+
+        return Container(
+          padding: EdgeInsets.all(containerPadding),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: AppSpacing.borderRadiusSm,
+            border: color != null
+                ? Border.all(
+                    color: color!,
+                    width: borderWidth,
+                  )
+                : null,
+            boxShadow: const [],
+          ),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: List.generate(
-              size.clamp(0, 6), // Max 6 cols for preview
-              (col) => Container(
-                width: cellSize,
-                height: cellSize,
-                margin: const EdgeInsets.all(1),
-                decoration: BoxDecoration(
-                  color: (row + col) % 3 == 0
-                      ? effectiveColor.withValues(alpha: 0.3)
-                      : AppColors.surface,
-                  borderRadius: BorderRadius.circular(2),
+              previewSize,
+              (row) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(
+                  previewSize,
+                  (col) {
+                    final letter = _getRandomLetter(row, col);
+                    
+                    return Container(
+                      width: actualCellSize,
+                      height: actualCellSize,
+                      margin: EdgeInsets.all(cellMargin),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(2),
+                        border: Border.all(
+                          color: AppColors.divider.withValues(alpha: 0.2),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          letter,
+                          style: AppTypography.gridLetter.copyWith(
+                            fontSize: math.max(4, actualCellSize * 0.5),
+                            color: AppColors.textSecondary.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
