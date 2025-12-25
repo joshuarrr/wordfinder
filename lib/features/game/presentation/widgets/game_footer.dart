@@ -27,7 +27,7 @@ class GameFooter extends StatelessWidget {
         AppSpacing.md,
         AppSpacing.sm,
         AppSpacing.md,
-        AppSpacing.md,
+        AppSpacing.lg,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -37,6 +37,7 @@ class GameFooter extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
+        bottom: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,29 +112,24 @@ class GameFooter extends StatelessWidget {
               color: AppColors.divider,
             ),
             const SizedBox(height: 8),
-            // Word chips - sizes naturally, scrolls if content exceeds available space
-            Flexible(
-              fit: FlexFit.loose,
-              child: SingleChildScrollView(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: () {
-                    final wordList = puzzle.words.map((wp) => wp.word).toList()
-                      ..sort();
-                    return wordList.map((word) {
-                      final isFound = foundWords.contains(word);
-                      return _WordChip(
-                        word: word,
-                        isFound: isFound,
-                        key: ValueKey(word),
-                      )
-                          .animate(key: ValueKey('${word}_$isFound'))
-                          .fadeIn(duration: 200.ms);
-                    }).toList();
-                  }(),
-                ),
-              ),
+            // Word chips - sizes naturally to content
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: () {
+                final wordList = puzzle.words.map((wp) => wp.word).toList()
+                  ..sort();
+                return wordList.map((word) {
+                  final isFound = foundWords.contains(word);
+                  return _WordChip(
+                    word: word,
+                    isFound: isFound,
+                    key: ValueKey(word),
+                  )
+                      .animate(key: ValueKey('${word}_$isFound'))
+                      .fadeIn(duration: 200.ms);
+                }).toList();
+              }(),
             ),
           ],
         ),

@@ -316,17 +316,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                         ),
                       ),
                     ),
-                    // Footer in portrait - takes only space needed, can expand if available
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: GameFooter(
-                        gameState: gameState,
-                        hintsRemaining:
-                            widget.difficulty.hints - gameState.hintsUsed,
-                        onHintPressed: () {
-                          ref.read(_gameStateProvider.notifier).useHint();
-                        },
-                      ),
+                    // Footer in portrait - takes only space needed
+                    GameFooter(
+                      gameState: gameState,
+                      hintsRemaining:
+                          widget.difficulty.hints - gameState.hintsUsed,
+                      onHintPressed: () {
+                        ref.read(_gameStateProvider.notifier).useHint();
+                      },
                     ),
                   ],
                 ),
