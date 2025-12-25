@@ -385,7 +385,7 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
     final random = DateTime.now().millisecondsSinceEpoch;
     final wordToHint = remainingWords[random % remainingWords.length];
     final wordPosition = current.puzzle.getWordPosition(wordToHint);
-    
+
     if (wordPosition != null) {
       final firstCell = wordPosition.cells.first;
       state = AsyncData(

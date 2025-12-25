@@ -18,7 +18,7 @@ class WordFinderApp extends StatelessWidget {
   Widget build(BuildContext context) {
     _log('WordFinderApp.build()');
     return MaterialApp.router(
-      title: 'Word Finder',
+      title: 'Word Search',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: appRouter,

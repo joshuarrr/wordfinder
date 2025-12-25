@@ -12,6 +12,7 @@ class GameCard extends StatefulWidget {
     this.color,
     this.borderColor,
     this.borderRadius,
+    this.showShadow = true,
   });
 
   final Widget child;
@@ -20,6 +21,7 @@ class GameCard extends StatefulWidget {
   final Color? color;
   final Color? borderColor;
   final BorderRadius? borderRadius;
+  final bool showShadow;
 
   @override
   State<GameCard> createState() => _GameCardState();
@@ -47,7 +49,9 @@ class _GameCardState extends State<GameCard> {
           border: widget.borderColor != null
               ? Border.all(color: widget.borderColor!, width: 2)
               : null,
-          boxShadow: _isPressed ? AppShadows.soft : AppShadows.medium,
+          boxShadow: widget.showShadow
+              ? (_isPressed ? AppShadows.soft : AppShadows.medium)
+              : null,
         ),
         transform: _isPressed
             ? (Matrix4.identity()

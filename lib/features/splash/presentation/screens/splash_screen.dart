@@ -64,16 +64,18 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                 ],
               ),
-              child: const Center(
-                child: Text(
-                  '🔍',
-                  style: TextStyle(fontSize: 60),
+              child: Center(
+                child: Image.asset(
+                  'assets/images/mind-cookie-White+logo+-+no+background.webp',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
             const SizedBox(height: 32),
             Text(
-              'Word Finder',
+              'Word Search',
               style: AppTypography.displayLarge,
             ),
           ],

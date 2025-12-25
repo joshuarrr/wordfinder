@@ -68,10 +68,7 @@ Future<ScoreStats> scoreStats(ScoreStatsRef ref) async {
 
 /// Provider for high score by difficulty
 @riverpod
-Future<int?> highScore(
-  HighScoreRef ref,
-  Difficulty difficulty,
-) async {
+Future<int?> highScore(HighScoreRef ref, Difficulty difficulty) async {
   try {
     final repository = await ref.watch(scoreRepositoryProvider.future);
     return await repository.getHighScore(difficulty);
@@ -80,4 +77,3 @@ Future<int?> highScore(
     return null;
   }
 }
-

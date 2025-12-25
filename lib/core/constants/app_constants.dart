@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 /// App-wide constants
 abstract final class AppConstants {
   // App info
-  static const String appName = 'Word Finder';
+  static const String appName = 'Word Search';
   static const String appVersion = '1.0.0';
 
   // Dev mode (only enabled in debug builds)

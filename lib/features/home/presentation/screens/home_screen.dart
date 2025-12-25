@@ -63,16 +63,18 @@ class HomeScreen extends StatelessWidget {
   Widget _buildTitle() {
     return Column(
       children: [
-        Text(
-          '🔍',
-          style: const TextStyle(fontSize: 64),
+        Image.asset(
+          'assets/images/mind-cookie-White+logo+-+no+background.webp',
+          width: 64,
+          height: 64,
+          fit: BoxFit.contain,
         )
             .animate()
             .fadeIn(duration: 600.ms)
             .scale(begin: const Offset(0.5, 0.5), curve: Curves.elasticOut),
         AppSpacing.vGapMd,
         Text(
-          'Word Finder',
+          'Word Search',
           style: AppTypography.displayLarge,
         )
             .animate()
@@ -133,18 +135,11 @@ class HomeScreen extends StatelessWidget {
       },
       color: AppColors.accent1.withValues(alpha: 0.2),
       borderColor: AppColors.accent1,
+      showShadow: false,
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.accent1,
-              borderRadius: AppSpacing.borderRadiusMd,
-            ),
-            child: const Center(
-              child: Text('📅', style: TextStyle(fontSize: 24)),
-            ),
+          CalendarDateWidget(
+            backgroundColor: AppColors.accent1,
           ),
           AppSpacing.hGapMd,
           Expanded(
