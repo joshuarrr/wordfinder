@@ -93,12 +93,22 @@ flutter build web --release
 open ios/Runner.xcworkspace
 ```
 
-2. **Set up Signing & Capabilities**:
+2. **Register Bundle Identifier** (if not already done):
+   - Go to [Apple Developer Portal](https://developer.apple.com/account)
+   - Navigate to Certificates, Identifiers & Profiles
+   - Click Identifiers → "+" → App IDs
+   - Select "App" → Continue
+   - Description: Wordfinder
+   - Bundle ID: Select "Explicit" and enter `fun.mindcookie.wordsearch`
+   - Enable required capabilities (Push Notifications, etc. if needed)
+   - Register the identifier
+
+3. **Set up Signing & Capabilities**:
    - Select the `Runner` target
    - Go to "Signing & Capabilities" tab
    - Enable "Automatically manage signing"
    - Select your Team (Apple Developer account)
-   - Ensure Bundle Identifier is `com.wordfinder.wordfinder`
+   - Ensure Bundle Identifier is `fun.mindcookie.wordsearch`
 
 3. **Update Version & Build Number**:
    - In `pubspec.yaml`, update version (e.g., `1.0.0+1`)
@@ -128,8 +138,10 @@ open ios/Runner.xcworkspace
    - Platform: iOS
    - Name: Wordfinder
    - Primary Language: English
-   - Bundle ID: `com.wordfinder.wordfinder`
+   - Bundle ID: `fun.mindcookie.wordsearch` (must be registered in Developer Portal first)
    - SKU: `wordfinder-001` (or unique identifier)
+   
+   **Note**: If bundle ID doesn't appear in dropdown, register it first in [Apple Developer Portal](https://developer.apple.com/account/resources/identifiers/list) under Identifiers → App IDs
 
 3. **Set up TestFlight**:
    - Go to TestFlight tab
