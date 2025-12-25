@@ -5,10 +5,6 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/(.*\\.(js|css|wasm|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|wav|mp3|mp4|webp|json|bin))",
-      "destination": "/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
