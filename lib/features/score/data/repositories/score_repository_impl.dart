@@ -32,7 +32,8 @@ class ScoreRepositoryImpl implements ScoreRepository {
 
     // Update difficulty stats
     final difficultyStats = await _dataSource.getDifficultyStats();
-    final currentDiffStats = difficultyStats[score.difficulty] ??
+    final currentDiffStats =
+        difficultyStats[score.difficulty] ??
         DifficultyStats(
           gamesPlayed: 0,
           totalScore: 0,
@@ -52,7 +53,7 @@ class ScoreRepositoryImpl implements ScoreRepository {
 
     // Update best time if faster
     int? newBestTime = currentDiffStats.bestTimeSeconds;
-    if (score.elapsedSeconds < (newBestTime ?? double.infinity).toInt()) {
+    if (newBestTime == null || score.elapsedSeconds < newBestTime) {
       newBestTime = score.elapsedSeconds;
     }
 
@@ -61,16 +62,16 @@ class ScoreRepositoryImpl implements ScoreRepository {
     final currentHighScoreStreak = isNewHighScore
         ? currentDiffStats.bestStreakHighScore + 1
         : 0;
-    final newBestStreakHighScore = currentHighScoreStreak >
-            currentDiffStats.bestStreakHighScore
+    final newBestStreakHighScore =
+        currentHighScoreStreak > currentDiffStats.bestStreakHighScore
         ? currentHighScoreStreak
         : currentDiffStats.bestStreakHighScore;
 
     final currentPerfectStreak = score.isPerfectGame
         ? currentDiffStats.bestStreakPerfect + 1
         : 0;
-    final newBestStreakPerfect = currentPerfectStreak >
-            currentDiffStats.bestStreakPerfect
+    final newBestStreakPerfect =
+        currentPerfectStreak > currentDiffStats.bestStreakPerfect
         ? currentPerfectStreak
         : currentDiffStats.bestStreakPerfect;
 
@@ -88,15 +89,15 @@ class ScoreRepositoryImpl implements ScoreRepository {
     // Update overall streaks - need to track current streaks separately
     // For now, we'll track them per difficulty and update overall best
     // In a real implementation, you'd want to track current streaks separately
-    
+
     // Update day and games streaks
     final lastPlayDate = await _dataSource.getLastPlayDate();
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
-    
+
     int currentDaysStreak = 0;
     int currentGamesStreak = 0;
-    
+
     if (lastPlayDate != null) {
       final lastDate = DateTime(
         lastPlayDate.year,
@@ -104,7 +105,7 @@ class ScoreRepositoryImpl implements ScoreRepository {
         lastPlayDate.day,
       );
       final daysDiff = todayDate.difference(lastDate).inDays;
-      
+
       if (daysDiff == 0) {
         // Same day - increment games streak
         currentGamesStreak = await _dataSource.getBestStreakGames() + 1;
@@ -123,20 +124,20 @@ class ScoreRepositoryImpl implements ScoreRepository {
       currentDaysStreak = 1;
       currentGamesStreak = 1;
     }
-    
+
     // Update best streaks if current is better
     final bestDaysStreak = await _dataSource.getBestStreakDays();
     if (currentDaysStreak > bestDaysStreak) {
       await _dataSource.setBestStreakDays(currentDaysStreak);
     }
-    
+
     final bestGamesStreak = await _dataSource.getBestStreakGames();
     if (currentGamesStreak > bestGamesStreak) {
       await _dataSource.setBestStreakGames(currentGamesStreak);
     }
-    
+
     await _dataSource.setLastPlayDate(today);
-    
+
     // Update overall high score and perfect streaks
     // Note: These need to track current streaks, not just best
     // For simplicity, we'll update if this is a new high score or perfect game
@@ -144,7 +145,7 @@ class ScoreRepositoryImpl implements ScoreRepository {
       final currentHighScoreStreak = await _dataSource.getBestStreakHighScore();
       await _dataSource.setBestStreakHighScore(currentHighScoreStreak + 1);
     }
-    
+
     if (score.isPerfectGame) {
       final currentPerfectStreak = await _dataSource.getBestStreakPerfect();
       await _dataSource.setBestStreakPerfect(currentPerfectStreak + 1);
@@ -206,4 +207,3 @@ class ScoreRepositoryImpl implements ScoreRepository {
     await _dataSource.clearAll();
   }
 }
-

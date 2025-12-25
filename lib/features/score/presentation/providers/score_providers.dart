@@ -11,14 +11,7 @@ part 'score_providers.g.dart';
 /// Provider for SharedPreferences instance
 @riverpod
 Future<SharedPreferences> sharedPreferences(SharedPreferencesRef ref) async {
-  try {
-    return await SharedPreferences.getInstance();
-  } catch (e) {
-    // If SharedPreferences channel is unavailable (e.g., during app close/navigation),
-    // return a cached instance or handle gracefully
-    // This prevents crashes when the platform channel is disconnected
-    rethrow;
-  }
+  return await SharedPreferences.getInstance();
 }
 
 /// Provider for LocalScoreDataSource

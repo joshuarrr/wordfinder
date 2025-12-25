@@ -10,8 +10,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(windowScene: windowScene)
         
-        // Create Flutter view controller - Flutter will handle engine sharing
-        let controller = FlutterViewController(project: nil, nibName: nil, bundle: nil)
+        // Get the Flutter engine from AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let controller = FlutterViewController(engine: appDelegate.flutterEngine, nibName: nil, bundle: nil)
+        
         window?.rootViewController = controller
         window?.makeKeyAndVisible()
     }

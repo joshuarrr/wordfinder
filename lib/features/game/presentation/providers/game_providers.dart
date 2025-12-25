@@ -457,9 +457,7 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
       ref.invalidate(scoreStatsProvider);
     } catch (e) {
       // Handle error silently for now
-      // In production, you might want to log this
       // This can happen if SharedPreferences channel is unavailable
-      // (e.g., app is closing or platform channel disconnected)
     }
   }
 

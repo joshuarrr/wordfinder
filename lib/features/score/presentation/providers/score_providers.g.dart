@@ -6,26 +6,26 @@ part of 'score_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$sharedPreferencesHash() => r'aa7ace48f3c0dce382957e3c6eac2449573583a9';
+String _$sharedPreferencesHash() => r'eceb0a339573ab7e50e2f0d6b3b774ac2eb4b45a';
 
 /// Provider for SharedPreferences instance
+/// Using keepAlive to ensure consistent instance across app lifecycle
 ///
 /// Copied from [sharedPreferences].
 @ProviderFor(sharedPreferences)
-final sharedPreferencesProvider =
-    AutoDisposeFutureProvider<SharedPreferences>.internal(
-      sharedPreferences,
-      name: r'sharedPreferencesProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sharedPreferencesHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final sharedPreferencesProvider = FutureProvider<SharedPreferences>.internal(
+  sharedPreferences,
+  name: r'sharedPreferencesProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sharedPreferencesHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef SharedPreferencesRef = AutoDisposeFutureProviderRef<SharedPreferences>;
+typedef SharedPreferencesRef = FutureProviderRef<SharedPreferences>;
 String _$localScoreDataSourceHash() =>
     r'4970446042824e06aaf60307103db874dfb46eb6';
 
@@ -68,13 +68,14 @@ final scoreRepositoryProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ScoreRepositoryRef = AutoDisposeFutureProviderRef<ScoreRepository>;
-String _$cumulativeScoreHash() => r'074b44eb51c31298b078d76a27b79425a08f8c37';
+String _$cumulativeScoreHash() => r'2cd946a322efea765300a383422ad5ae2c1d9f9f';
 
 /// Provider for cumulative score
+/// Using keepAlive to ensure it persists and can be properly refreshed
 ///
 /// Copied from [cumulativeScore].
 @ProviderFor(cumulativeScore)
-final cumulativeScoreProvider = AutoDisposeFutureProvider<int>.internal(
+final cumulativeScoreProvider = FutureProvider<int>.internal(
   cumulativeScore,
   name: r'cumulativeScoreProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -86,8 +87,8 @@ final cumulativeScoreProvider = AutoDisposeFutureProvider<int>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef CumulativeScoreRef = AutoDisposeFutureProviderRef<int>;
-String _$scoreStatsHash() => r'94af010fe8fa4bd9acc29e703e0091276483e105';
+typedef CumulativeScoreRef = FutureProviderRef<int>;
+String _$scoreStatsHash() => r'dee2d71ee039cb55643aea1dbc8610331c244997';
 
 /// Provider for all score statistics
 ///
@@ -106,7 +107,7 @@ final scoreStatsProvider = AutoDisposeFutureProvider<ScoreStats>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ScoreStatsRef = AutoDisposeFutureProviderRef<ScoreStats>;
-String _$highScoreHash() => r'978086d120686194d9dfb1f7c866b02db32510a5';
+String _$highScoreHash() => r'e629283f33f003a30bc0fda068ac65455a0da6d7';
 
 /// Copied from Dart SDK
 class _SystemHash {
