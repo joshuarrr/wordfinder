@@ -17,7 +17,9 @@ This guide covers deploying the Word Finder app to:
 
 **Important**: Vercel doesn't have Flutter SDK installed. You must build Flutter web locally first, then deploy the static files.
 
-### Option A: Using Vercel CLI (Recommended)
+### Option A: Using Vercel CLI (Manual Deployment - Recommended for Quick Deploys)
+
+**Best for**: One-off deployments or testing
 
 1. **Install Vercel CLI** (if not already installed):
 ```bash
@@ -32,30 +34,35 @@ flutter build web --release
 3. **Deploy to Vercel**:
 ```bash
 cd build/web
-vercel --prod
+vercel --prod --yes
 ```
 
-Follow the prompts to:
-- Link to existing project or create new one
-- Configure project settings
-- Deploy
+This deploys the pre-built static files directly. No build artifacts in git, no Vercel build commands needed.
 
-### Option B: Using Git Integration with GitHub Actions (Recommended)
+### Option B: Using GitHub Actions (Recommended for Automatic Deployments)
+
+**Best for**: Automatic deployments on every push to main
 
 **Note**: Vercel doesn't have Flutter SDK, so we use GitHub Actions to build, then deploy to Vercel.
 
-1. **Set up GitHub Actions** (already configured in `.github/workflows/deploy-vercel.yml`):
-   - The workflow builds Flutter web and deploys to Vercel automatically
+1. **Get Vercel credentials**:
+   - Go to [Vercel Settings → Tokens](https://vercel.com/account/tokens)
+   - Create a new token → Copy the token
+   - Go to your Vercel project → Settings → General
+   - Copy **Org ID** and **Project ID**
 
-2. **Configure Vercel Secrets** in GitHub:
-   - Go to your GitHub repo → Settings → Secrets and variables → Actions
-   - Add these secrets:
-     - `VERCEL_TOKEN`: Get from [Vercel Settings → Tokens](https://vercel.com/account/tokens)
-     - `VERCEL_ORG_ID`: Found in Vercel project settings → General
-     - `VERCEL_PROJECT_ID`: Found in Vercel project settings → General
+2. **Configure GitHub Secrets**:
+   - Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+   - Click **New repository secret** and add:
+     - Name: `VERCEL_TOKEN` → Value: (paste your Vercel token)
+     - Name: `VERCEL_ORG_ID` → Value: (paste your Org ID)
+     - Name: `VERCEL_PROJECT_ID` → Value: (paste your Project ID)
 
 3. **Push to main branch**:
-   - The workflow will automatically build and deploy on each push
+   - The workflow (`.github/workflows/deploy-vercel.yml`) will automatically:
+     - Build Flutter web app
+     - Deploy to Vercel production
+   - No build artifacts committed to git ✅
 
 ### Option B2: Manual Git Integration (Requires Vercel Dashboard Update)
 
