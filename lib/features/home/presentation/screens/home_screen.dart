@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,14 +8,23 @@ import '../../../../core/router/router.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/breakpoints.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../score/presentation/widgets/cumulative_score_widget.dart';
 
 /// Home screen with game mode selection
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: AppSpacing.md),
+            child: const CumulativeScoreWidget(),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
