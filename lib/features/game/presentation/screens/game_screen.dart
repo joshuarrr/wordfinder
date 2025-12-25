@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/constants.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/services/audio_service.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/breakpoints.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -401,6 +402,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     _completionDialogShown = true;
     _timer?.cancel();
+
+    // Play puzzle completion sound
+    ref.read(audioServiceProvider).playPuzzleComplete();
 
     // Pick a random bright happy color for the barrier
     final random = math.Random();

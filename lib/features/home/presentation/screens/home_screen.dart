@@ -5,17 +5,32 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/constants.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/services/audio_service.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/breakpoints.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../score/presentation/widgets/cumulative_score_widget.dart';
 
 /// Home screen with game mode selection
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Preload button click sound for instant playback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(audioServiceProvider).preloadButtonClick();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -42,7 +57,7 @@ class HomeScreen extends ConsumerWidget {
                     children: [
                       _buildTitle(),
                       AppSpacing.vGapLg,
-                      _buildGameModes(context),
+                      _buildGameModes(context, ref),
                       AppSpacing.vGapLg,
                       _buildBottomActions(context),
                     ],
@@ -58,7 +73,7 @@ class HomeScreen extends ConsumerWidget {
                   const Spacer(),
                   _buildTitle(),
                   AppSpacing.vGapXxl,
-                  _buildGameModes(context),
+                  _buildGameModes(context, ref),
                   const Spacer(),
                   _buildBottomActions(context),
                 ],
@@ -103,17 +118,22 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGameModes(BuildContext context) {
+  Widget _buildGameModes(BuildContext context, WidgetRef ref) {
+    final audioService = ref.read(audioServiceProvider);
+    
     return Column(
       children: [
         // Casual mode
         PrimaryButton(
           label: 'Play',
           icon: Icons.play_arrow_rounded,
-          onPressed: () => context.push(
-            AppRoutes.category,
-            extra: GameMode.casual,
-          ),
+          onPressed: () {
+            audioService.playButtonClick();
+            context.push(
+              AppRoutes.category,
+              extra: GameMode.casual,
+            );
+          },
         )
             .animate()
             .fadeIn(delay: 500.ms, duration: 400.ms)
@@ -123,24 +143,30 @@ class HomeScreen extends ConsumerWidget {
         SecondaryButton(
           label: 'Timed Challenge',
           icon: Icons.timer_outlined,
-          onPressed: () => context.push(
-            AppRoutes.category,
-            extra: GameMode.timed,
-          ),
+          onPressed: () {
+            audioService.playButtonClick();
+            context.push(
+              AppRoutes.category,
+              extra: GameMode.timed,
+            );
+          },
         )
             .animate()
             .fadeIn(delay: 600.ms, duration: 400.ms)
             .slideX(begin: 0.2, curve: Curves.easeOutCubic),
         AppSpacing.vGapMd,
         // Daily puzzle
-        _buildDailyPuzzleCard(context),
+        _buildDailyPuzzleCard(context, ref),
       ],
     );
   }
 
-  Widget _buildDailyPuzzleCard(BuildContext context) {
+  Widget _buildDailyPuzzleCard(BuildContext context, WidgetRef ref) {
+    final audioService = ref.read(audioServiceProvider);
+    
     return GameCard(
       onTap: () {
+        audioService.playButtonClick();
         // TODO: Navigate to daily puzzle
       },
       color: AppColors.accent1.withValues(alpha: 0.2),

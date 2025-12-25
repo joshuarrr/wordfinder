@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/audio_service.dart';
 import '../../data/datasources/puzzle_generator.dart';
 import '../../domain/entities/game_state.dart';
 import '../../domain/entities/puzzle.dart';
@@ -290,6 +291,9 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
       // Word found!
       final allWordsFound =
           current.foundWords.length + 1 >= current.puzzle.words.length;
+
+      // Play word found sound
+      ref.read(audioServiceProvider).playWordFound();
 
       // Clear hint if the found word's first letter matches the hinted cell
       final firstCell = wordPosition.cells.first;

@@ -24,6 +24,9 @@ dependencies:
   # Animations
   flutter_animate: ^4.5.2
   
+  # Audio
+  audioplayers: ^6.1.0
+  
   # Code generation
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
@@ -42,3 +45,7 @@ flutter:
   
   assets:
     - assets/images/mind-cookie-White+logo+-+no+background.webp
+    - assets/sounds/Heavy-popping.wav
+    - assets/sounds/davince21__harp-motif1.mp3
+    - assets/sounds/dry-pop-up-notification-alert-2356.wav
+    - assets/sounds/bubble-pop-up-alert-notification.wav

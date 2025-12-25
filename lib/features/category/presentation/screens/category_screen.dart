@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/constants.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/services/audio_service.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 
 /// Screen for selecting word category
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends ConsumerWidget {
   const CategoryScreen({
     super.key,
     required this.gameMode,
@@ -17,7 +20,7 @@ class CategoryScreen extends StatelessWidget {
   final GameMode gameMode;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SwipeableScreen(
       onPop: () => context.pop(),
       child: Scaffold(
@@ -51,7 +54,7 @@ class CategoryScreen extends StatelessWidget {
                   .fadeIn(delay: 100.ms, duration: 400.ms),
               AppSpacing.vGapLg,
               Expanded(
-                child: _buildCategoryGrid(context),
+                child: _buildCategoryGrid(context, ref),
               ),
             ],
           ),
@@ -61,7 +64,9 @@ class CategoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryGrid(BuildContext context) {
+  Widget _buildCategoryGrid(BuildContext context, WidgetRef ref) {
+    final audioService = ref.read(audioServiceProvider);
+    
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -79,13 +84,16 @@ class CategoryScreen extends StatelessWidget {
           emoji: category.emoji,
           label: category.displayName,
           color: color,
-          onTap: () => context.push(
-            AppRoutes.difficulty,
-            extra: {
-              'gameMode': gameMode,
-              'category': category,
-            },
-          ),
+          onTap: () {
+            audioService.playButtonClick();
+            context.push(
+              AppRoutes.difficulty,
+              extra: {
+                'gameMode': gameMode,
+                'category': category,
+              },
+            );
+          },
         )
             .animate()
             .fadeIn(delay: 200.ms + delay, duration: 400.ms)

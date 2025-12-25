@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/constants.dart';
 import '../../../../core/router/router.dart';
+import '../../../../core/services/audio_service.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/widgets/widgets.dart';
 
 /// Screen for selecting difficulty level
-class DifficultyScreen extends StatefulWidget {
+class DifficultyScreen extends ConsumerStatefulWidget {
   const DifficultyScreen({
     super.key,
     required this.gameMode,
@@ -19,10 +22,10 @@ class DifficultyScreen extends StatefulWidget {
   final WordCategory category;
 
   @override
-  State<DifficultyScreen> createState() => _DifficultyScreenState();
+  ConsumerState<DifficultyScreen> createState() => _DifficultyScreenState();
 }
 
-class _DifficultyScreenState extends State<DifficultyScreen> {
+class _DifficultyScreenState extends ConsumerState<DifficultyScreen> {
   Difficulty? _selectedDifficulty;
 
   @override
@@ -78,6 +81,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
   }
 
   Widget _buildDifficultyList() {
+    final audioService = ref.read(audioServiceProvider);
     final difficulties = Difficulty.values;
     final colors = [
       AppColors.success, // Easy - green
@@ -104,6 +108,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             cellSize: 12,
           ),
           onTap: () {
+            audioService.playButtonClick();
             // Auto-start game when difficulty is selected
             context.push(
               AppRoutes.game,
