@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
 /// Audio service for playing sound effects
 class AudioService {
@@ -11,11 +12,16 @@ class AudioService {
 
   bool _buttonSoundPreloaded = false;
 
+  /// Get asset path - on web, Flutter uses 'assets/' prefix
+  String _assetPath(String path) {
+    return kIsWeb ? 'assets/$path' : path;
+  }
+
   /// Preload button click sound for instant playback
   Future<void> preloadButtonClick() async {
     if (_buttonSoundPreloaded) return;
     try {
-      await _buttonPlayer.setSource(AssetSource('sounds/Heavy-popping.wav'));
+      await _buttonPlayer.setSource(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
       _buttonSoundPreloaded = true;
     } catch (e) {
       // Silently fail if audio can't be preloaded
@@ -28,10 +34,10 @@ class AudioService {
       if (_buttonSoundPreloaded) {
         // If preloaded, stop any current playback and play from start
         await _buttonPlayer.stop();
-        await _buttonPlayer.play(AssetSource('sounds/Heavy-popping.wav'));
+        await _buttonPlayer.play(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
       } else {
         // If not preloaded, play from source (will be slower first time)
-        await _buttonPlayer.play(AssetSource('sounds/Heavy-popping.wav'));
+        await _buttonPlayer.play(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
       }
     } catch (e) {
       // Silently fail if audio can't be played
@@ -45,7 +51,7 @@ class AudioService {
       final soundFile = soundIndex == 0
           ? 'sounds/dry-pop-up-notification-alert-2356.wav'
           : 'sounds/bubble-pop-up-alert-notification.wav';
-      await _wordFoundPlayer.play(AssetSource(soundFile));
+      await _wordFoundPlayer.play(AssetSource(_assetPath(soundFile)));
     } catch (e) {
       // Silently fail if audio can't be played
     }
@@ -54,7 +60,7 @@ class AudioService {
   /// Play puzzle completion sound (harp motif)
   Future<void> playPuzzleComplete() async {
     try {
-      await _completionPlayer.play(AssetSource('sounds/davince21__harp-motif1.mp3'));
+      await _completionPlayer.play(AssetSource(_assetPath('sounds/davince21__harp-motif1.mp3')));
     } catch (e) {
       // Silently fail if audio can't be played
     }

@@ -86717,7 +86717,7 @@ var $async$BV=A.z(function(a,b){if(a===1){o.push(b)
 s=p}while(true)switch(s){case 0:if(n.e){s=1
 break}p=4
 s=7
-return A.p(n.a.rX(new A.nd("sounds/Heavy-popping.wav",null)),$async$BV)
+return A.p(n.a.rX(new A.nd("assets/sounds/Heavy-popping.wav",null)),$async$BV)
 case 7:n.e=!0
 p=2
 s=6
@@ -86740,11 +86740,11 @@ break
 case 6:s=9
 return A.p(n.c5(),$async$kF)
 case 9:s=10
-return A.p(n.n1(new A.nd("sounds/Heavy-popping.wav",null)),$async$kF)
+return A.p(n.n1(new A.nd("assets/sounds/Heavy-popping.wav",null)),$async$kF)
 case 10:s=7
 break
 case 8:s=11
-return A.p(n.n1(new A.nd("sounds/Heavy-popping.wav",null)),$async$kF)
+return A.p(n.n1(new A.nd("assets/sounds/Heavy-popping.wav",null)),$async$kF)
 case 11:case 7:q=1
 s=5
 break
@@ -86763,7 +86763,7 @@ s=q}while(true)switch(s){case 0:q=3
 n=o.d.f5(2)
 m=J.d(n,0)?"sounds/dry-pop-up-notification-alert-2356.wav":"sounds/bubble-pop-up-alert-notification.wav"
 s=6
-return A.p(o.b.n1(new A.nd(m,null)),$async$BQ)
+return A.p(o.b.n1(new A.nd("assets/"+m,null)),$async$BQ)
 case 6:q=1
 s=5
 break
@@ -86780,7 +86780,7 @@ w0(){var s=0,r=A.y(t.H),q=1,p=[],o=this,n,m
 var $async$w0=A.z(function(a,b){if(a===1){p.push(b)
 s=q}while(true)switch(s){case 0:q=3
 s=6
-return A.p(o.c.n1(new A.nd("sounds/davince21__harp-motif1.mp3",null)),$async$w0)
+return A.p(o.c.n1(new A.nd("assets/sounds/davince21__harp-motif1.mp3",null)),$async$w0)
 case 6:q=1
 s=5
 break
