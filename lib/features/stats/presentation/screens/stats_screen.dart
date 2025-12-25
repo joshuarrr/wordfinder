@@ -10,17 +10,18 @@ class StatsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: AppIconButton(
-          icon: Icons.arrow_back_rounded,
-          onPressed: () => context.pop(),
-          backgroundColor: Colors.transparent,
+    return SwipeableScreen(
+      onPop: () => context.pop(),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: AppBackButton(
+            onPressed: () => context.pop(),
+          ),
+          title: const Text('Statistics'),
         ),
-        title: const Text('Statistics'),
-      ),
-      body: const SafeArea(
-        child: StatsContent(),
+        body: const SafeArea(
+          child: StatsContent(),
+        ),
       ),
     );
   }

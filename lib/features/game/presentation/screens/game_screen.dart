@@ -213,8 +213,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           appBar: isLandscape
               ? null
               : AppBar(
-                  leading: IconButton(
-                    icon: const Icon(Icons.chevron_left, size: 28),
+                  leading: AppBackButton(
                     onPressed: () => _showExitDialog(context),
                   ),
                   centerTitle: true,

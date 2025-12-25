@@ -27,23 +27,23 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: AppIconButton(
-          icon: Icons.arrow_back_rounded,
-          onPressed: () => context.pop(),
-          backgroundColor: Colors.transparent,
+    return SwipeableScreen(
+      onPop: () => context.pop(),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: AppBackButton(
+            onPressed: () => context.pop(),
+          ),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(widget.category.emoji),
+              AppSpacing.hGapSm,
+              Text(widget.category.displayName),
+            ],
+          ),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(widget.category.emoji),
-            AppSpacing.hGapSm,
-            Text(widget.category.displayName),
-          ],
-        ),
-      ),
-      body: SafeArea(
+        body: SafeArea(
         child: Padding(
           padding: AppSpacing.screenPadding,
           child: Column(
@@ -72,6 +72,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

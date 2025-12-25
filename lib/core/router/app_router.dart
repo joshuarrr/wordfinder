@@ -58,10 +58,9 @@ final appRouter = GoRouter(
       name: 'category',
       pageBuilder: (context, state) {
         final gameMode = state.extra as GameMode? ?? GameMode.casual;
-        return CustomTransitionPage(
+        return MaterialPage<void>(
           key: state.pageKey,
           child: CategoryScreen(gameMode: gameMode),
-          transitionsBuilder: _slideUpTransition,
         );
       },
     ),
@@ -72,13 +71,12 @@ final appRouter = GoRouter(
       name: 'difficulty',
       pageBuilder: (context, state) {
         final args = state.extra as Map<String, dynamic>?;
-        return CustomTransitionPage(
+        return MaterialPage<void>(
           key: state.pageKey,
           child: DifficultyScreen(
             gameMode: args?['gameMode'] as GameMode? ?? GameMode.casual,
             category: args?['category'] as WordCategory? ?? WordCategory.animals,
           ),
-          transitionsBuilder: _slideUpTransition,
         );
       },
     ),
@@ -105,10 +103,9 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.stats,
       name: 'stats',
-      pageBuilder: (context, state) => CustomTransitionPage(
+      pageBuilder: (context, state) => MaterialPage<void>(
         key: state.pageKey,
         child: const StatsScreen(),
-        transitionsBuilder: _slideUpTransition,
       ),
     ),
   ],
@@ -143,6 +140,22 @@ Widget _slideUpTransition(
       opacity: CurveTween(curve: Curves.easeIn).animate(animation),
       child: child,
     ),
+  );
+}
+
+Widget _pushTransition(
+  BuildContext context,
+  Animation<double> animation,
+  Animation<double> secondaryAnimation,
+  Widget child,
+) {
+  // Slide from right to left (iOS-style push transition)
+  return SlideTransition(
+    position: Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(animation),
+    child: child,
   );
 }
 

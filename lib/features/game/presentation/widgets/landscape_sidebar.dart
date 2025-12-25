@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/score_formatter.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../../score/presentation/widgets/cumulative_score_widget.dart';
 import '../../domain/entities/game_state.dart';
 import 'game_footer.dart';
@@ -63,11 +64,8 @@ class LandscapeSidebar extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left, size: 28),
+                  AppBackButton(
                     onPressed: onBackPressed,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
                   ),
                   const SizedBox(width: 4),
                   Text(category.emoji, style: const TextStyle(fontSize: 16)),

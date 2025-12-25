@@ -18,16 +18,16 @@ class CategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: AppIconButton(
-          icon: Icons.arrow_back_rounded,
-          onPressed: () => context.pop(),
-          backgroundColor: Colors.transparent,
+    return SwipeableScreen(
+      onPop: () => context.pop(),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: AppBackButton(
+            onPressed: () => context.pop(),
+          ),
+          title: Text(gameMode.displayName),
         ),
-        title: Text(gameMode.displayName),
-      ),
-      body: SafeArea(
+        body: SafeArea(
         child: Padding(
           padding: AppSpacing.screenPadding,
           child: Column(
@@ -56,6 +56,7 @@ class CategoryScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }
