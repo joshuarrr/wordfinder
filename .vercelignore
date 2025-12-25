@@ -1,0 +1,12 @@
+ios/
+android/
+build/ios/
+build/android/
+*.iml
+.DS_Store
+.git/
+.gitignore
+README.md
+docs/
+test/
+
