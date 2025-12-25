@@ -13,6 +13,10 @@ class AudioService {
   bool _buttonSoundPreloaded = false;
   bool _audioInitialized = false;
 
+  AudioService() {
+    // Logging enabled via print statements for web debugging
+  }
+
   /// Get the correct asset path for the platform
   String _getAssetPath(String path) {
     // On web, assets need the full path including 'assets/' prefix
@@ -28,16 +32,20 @@ class AudioService {
     try {
       // On web, we need to play a sound first to unlock audio context
       if (kIsWeb) {
+        final path = _getAssetPath('sounds/Heavy-popping.wav');
+        print('Initializing audio with path: $path');
         await _buttonPlayer.setReleaseMode(ReleaseMode.stop);
         // Play a sound to unlock audio context (must be user-initiated)
-        await _buttonPlayer.play(AssetSource(_getAssetPath('sounds/Heavy-popping.wav')));
-        await Future.delayed(const Duration(milliseconds: 50));
+        await _buttonPlayer.play(AssetSource(path));
+        await Future.delayed(const Duration(milliseconds: 100));
         await _buttonPlayer.stop();
+        print('Audio initialized successfully');
       }
       _audioInitialized = true;
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (kDebugMode) {
         print('Audio initialization error: $e');
+        print('Stack trace: $stackTrace');
       }
     }
   }
@@ -63,6 +71,7 @@ class AudioService {
         await initializeAudio();
       }
       final assetPath = _getAssetPath('sounds/Heavy-popping.wav');
+      print('Playing button click sound from: $assetPath');
       if (_buttonSoundPreloaded) {
         // If preloaded, stop any current playback and play from start
         await _buttonPlayer.stop();
@@ -71,9 +80,11 @@ class AudioService {
         // If not preloaded, play from source (will be slower first time)
         await _buttonPlayer.play(AssetSource(assetPath));
       }
-    } catch (e) {
+      print('Button click sound playback initiated');
+    } catch (e, stackTrace) {
       if (kDebugMode) {
         print('Audio playback error: $e');
+        print('Stack trace: $stackTrace');
       }
     }
   }
