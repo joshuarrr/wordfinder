@@ -18,10 +18,13 @@ class AudioService {
   /// Play button click sound (Heavy-popping.wav)
   Future<void> playButtonClick() async {
     try {
-      // Use same pattern as game sounds - direct play without stop
-      await _buttonPlayer.play(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
-    } catch (e) {
-      // Silently fail if audio can't be played
+      final path = _assetPath('sounds/Heavy-popping.wav');
+      print('playButtonClick called with path: $path');
+      await _buttonPlayer.play(AssetSource(path));
+      print('playButtonClick: play() called successfully');
+    } catch (e, stackTrace) {
+      print('playButtonClick ERROR: $e');
+      print('Stack trace: $stackTrace');
     }
   }
 
