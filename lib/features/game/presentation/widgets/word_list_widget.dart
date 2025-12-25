@@ -1,153 +1,84 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/theme.dart';
 import '../../domain/entities/game_state.dart';
-import '../providers/game_providers.dart';
 
 /// Widget displaying the list of words to find
-class WordListWidget extends ConsumerWidget {
+class WordListWidget extends StatelessWidget {
   const WordListWidget({
     super.key,
-    required this.difficulty,
-    required this.category,
-    required this.gameMode,
+    required this.gameState,
   });
 
-  final Difficulty difficulty;
-  final WordCategory category;
-  final GameMode gameMode;
+  final GameState gameState;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final gameStateProvider = asyncGameStateNotifierProvider(
-      difficulty: difficulty,
-      category: category,
-      gameMode: gameMode,
-    );
-    
-    final asyncGameState = ref.watch(gameStateProvider);
-    
-    return asyncGameState.when(
-      loading: () => _buildLoadingContainer(),
-      error: (e, st) => _buildErrorContainer(e),
-      data: (gameState) => _buildWordList(gameState),
-    );
-  }
-
-  Widget _buildLoadingContainer() {
-    return Container(
-      width: double.infinity,
-      padding: AppSpacing.paddingMd,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: AppSpacing.borderRadiusLg,
-        boxShadow: AppShadows.soft,
-      ),
-      child: Center(
-        child: Text(
-          'Loading words...',
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.textHint,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorContainer(Object error) {
-    return Container(
-      width: double.infinity,
-      padding: AppSpacing.paddingMd,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: AppSpacing.borderRadiusLg,
-        boxShadow: AppShadows.soft,
-      ),
-      child: Center(
-        child: Text(
-          'Error loading words',
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.error,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWordList(GameState gameState) {
+  Widget build(BuildContext context) {
     final puzzle = gameState.puzzle;
     final foundWords = gameState.foundWords;
-    
-    return Container(
-      width: double.infinity,
-      padding: AppSpacing.paddingMd,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: AppSpacing.borderRadiusLg,
-        boxShadow: AppShadows.soft,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Words to Find',
-                style: AppTypography.titleMedium,
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Words to find header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Words to Find',
+              style: AppTypography.labelLarge.copyWith(
+                color: AppColors.textSecondary,
               ),
-              Text(
-                '${foundWords.length}/${puzzle.words.length}',
-                style: AppTypography.labelLarge.copyWith(
-                  color: AppColors.primary,
-                ),
+            ),
+            Text(
+              '${foundWords.length}/${puzzle.words.length}',
+              style: AppTypography.labelLarge.copyWith(
+                color: AppColors.primary,
               ),
-            ],
-          ),
-          AppSpacing.vGapMd,
-          Expanded(
-            child: puzzle.words.isEmpty
-                ? Center(
-                    child: Text(
-                      'Loading words...',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textHint,
-                      ),
-                    ),
-                  )
-                : SingleChildScrollView(
-                    child: Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: () {
-                        // Sort words alphabetically
-                        final wordList = puzzle.words.map((wp) => wp.word).toList()..sort();
-                        return wordList.map((word) {
-                          final isFound = foundWords.contains(word);
-                          return _WordChip(
-                            word: word,
-                            isFound: isFound,
-                            key: ValueKey(word),
-                          )
-                              .animate(key: ValueKey('${word}_$isFound'))
-                              .fadeIn(duration: 200.ms)
-                              .then(delay: isFound ? 0.ms : 0.ms)
-                              .scale(
-                                begin: const Offset(1, 1),
-                                end: isFound ? const Offset(0.95, 0.95) : const Offset(1, 1),
-                                duration: 300.ms,
-                                curve: Curves.easeOutCubic,
-                              );
-                        }).toList();
-                      }(),
+            ),
+          ],
+        ),
+        AppSpacing.vGapSm,
+        Expanded(
+          child: puzzle.words.isEmpty
+              ? Center(
+                  child: Text(
+                    'Loading words...',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textHint,
                     ),
                   ),
-          ),
-        ],
-      ),
+                )
+              : SingleChildScrollView(
+                  child: Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: () {
+                      // Sort words alphabetically
+                      final wordList = puzzle.words.map((wp) => wp.word).toList()..sort();
+                      return wordList.map((word) {
+                        final isFound = foundWords.contains(word);
+                        return _WordChip(
+                          word: word,
+                          isFound: isFound,
+                          key: ValueKey(word),
+                        )
+                            .animate(key: ValueKey('${word}_$isFound'))
+                            .fadeIn(duration: 200.ms)
+                            .then(delay: isFound ? 0.ms : 0.ms)
+                            .scale(
+                              begin: const Offset(1, 1),
+                              end: isFound ? const Offset(0.95, 0.95) : const Offset(1, 1),
+                              duration: 300.ms,
+                              curve: Curves.easeOutCubic,
+                            );
+                      }).toList();
+                    }(),
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

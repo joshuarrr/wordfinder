@@ -6,14 +6,16 @@ import '../../../../core/theme/theme.dart';
 import '../../../game/domain/entities/game_state.dart';
 import '../../../../core/constants/app_constants.dart';
 
-/// Widget displaying current puzzle score above grid
+/// Widget displaying current puzzle score
 class PuzzleScoreWidget extends ConsumerStatefulWidget {
   const PuzzleScoreWidget({
     super.key,
     required this.gameState,
+    this.compact = false,
   });
 
   final GameState gameState;
+  final bool compact;
 
   @override
   ConsumerState<PuzzleScoreWidget> createState() =>
@@ -89,21 +91,26 @@ class _PuzzleScoreWidgetState extends ConsumerState<PuzzleScoreWidget>
                         .round())
                 .clamp(0, currentScore);
 
+        final textStyle = widget.compact
+            ? AppTypography.titleSmall
+            : AppTypography.headlineSmall;
+        final emojiSize = widget.compact ? 18.0 : 24.0;
+
         return Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🏆', style: TextStyle(fontSize: 24)),
-              const SizedBox(width: 8),
+              Text('🏆', style: TextStyle(fontSize: emojiSize)),
+              SizedBox(width: widget.compact ? 6 : 8),
               Text(
                 'Puzzle Score: ',
-                style: AppTypography.headlineSmall.copyWith(
+                style: textStyle.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
               Text(
                 ScoreFormatter.formatScore(displayedScore),
-                style: AppTypography.headlineSmall.copyWith(
+                style: textStyle.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),

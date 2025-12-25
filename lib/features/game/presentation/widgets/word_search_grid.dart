@@ -119,13 +119,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
           });
         }
 
-        return Container(
-          padding: AppSpacing.paddingMd,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
-            borderRadius: AppSpacing.borderRadiusLg,
-          ),
-          child: Center(
+        return Center(
             child: SizedBox(
               width: constrainedGridSize,
               height: constrainedGridSize,
@@ -176,16 +170,19 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                               padding: const EdgeInsets.all(padding),
                               child: LayoutBuilder(
                                 builder: (context, innerConstraints) {
-                                  // Calculate cell size based on inner constraints
+                                  // Calculate cell size to fit exactly within available space
                                   final innerWidth = innerConstraints.maxWidth;
                                   final innerHeight = innerConstraints.maxHeight;
-                                  final cellArea = math.min(innerWidth, innerHeight);
                                   
-                                  // Recalculate cell size to fit exactly
-                                  // For N cells: cellArea = N * (cellSize + margin*2)
-                                  // So: cellSize = (cellArea / N) - margin*2
-                                  final exactCellSize = (cellArea / puzzle.size) - (margin * 2);
-                                  final finalCellSize = exactCellSize.clamp(24.0, 60.0);
+                                  // For N cells: totalSpace = N * (cellSize + margin*2)
+                                  // So: cellSize = (totalSpace / N) - margin*2
+                                  // Use floor to ensure we never exceed available space
+                                  final cellSizeFromWidth = (innerWidth / puzzle.size) - (margin * 2);
+                                  final cellSizeFromHeight = (innerHeight / puzzle.size) - (margin * 2);
+                                  
+                                  // Use smaller dimension, floor to prevent overflow, cap at 60px max
+                                  final exactCellSize = math.min(cellSizeFromWidth, cellSizeFromHeight);
+                                  final finalCellSize = exactCellSize.floorToDouble().clamp(16.0, 60.0);
                                   
                                   // Update current cell size for handlers
                                   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -196,10 +193,12 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                                   
                                   return Column(
                                     mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: List.generate(
                                       puzzle.size,
                                       (row) => Row(
                                         mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: List.generate(
                                           puzzle.size,
                                           (col) => _buildCell(
@@ -263,7 +262,6 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                 ],
               ),
             ),
-          ),
         );
       },
     );
