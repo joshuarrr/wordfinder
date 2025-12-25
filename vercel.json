@@ -1,5 +1,5 @@
 {
-  "buildCommand": "echo 'Skipping build - handled by GitHub Actions'",
+  "buildCommand": "mkdir -p build/web && echo '<!DOCTYPE html><html><head><title>Deploying...</title></head><body><h1>Deploying via GitHub Actions</h1></body></html>' > build/web/index.html",
   "installCommand": "echo 'Skipping install - handled by GitHub Actions'",
   "outputDirectory": "build/web",
   "framework": null,
