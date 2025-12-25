@@ -1,6 +1,6 @@
 {
-  "buildCommand": "",
-  "installCommand": "",
+  "buildCommand": "echo 'Skipping build - handled by GitHub Actions'",
+  "installCommand": "echo 'Skipping install - handled by GitHub Actions'",
   "outputDirectory": "build/web",
   "framework": null,
   "rewrites": [
