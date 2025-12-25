@@ -38,6 +38,7 @@ class GameFooter extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header row: count + "Words to find" + help button
@@ -110,8 +111,9 @@ class GameFooter extends StatelessWidget {
               color: AppColors.divider,
             ),
             const SizedBox(height: 8),
-            // Word chips - flexible height (expands in sidebar, fixed in footer)
-            Expanded(
+            // Word chips - sizes naturally, scrolls if content exceeds available space
+            Flexible(
+              fit: FlexFit.loose,
               child: SingleChildScrollView(
                 child: Wrap(
                   spacing: 6,
@@ -169,8 +171,8 @@ class _WordChip extends StatelessWidget {
       ),
       child: Text(
         word,
-        style: AppTypography.labelSmall.copyWith(
-          fontWeight: FontWeight.w500,
+        style: AppTypography.bodyMedium.copyWith(
+          fontWeight: FontWeight.w600,
           color: isFound ? AppColors.success : AppColors.textPrimary,
           decoration: isFound ? TextDecoration.lineThrough : null,
         ),

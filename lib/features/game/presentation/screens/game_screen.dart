@@ -284,17 +284,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     Expanded(
                       child: SafeArea(
                         left: false,
-                        child: InteractiveViewer(
-                          minScale: 1.0,
-                          maxScale: 3.0,
-                          child: Padding(
-                            padding: AppSpacing.paddingMd,
-                            child: Center(
-                              child: WordSearchGrid(
-                                difficulty: widget.difficulty,
-                                category: widget.category,
-                                gameMode: widget.gameMode,
-                              ),
+                        child: Padding(
+                          padding: AppSpacing.paddingMd,
+                          child: Center(
+                            child: WordSearchGrid(
+                              difficulty: widget.difficulty,
+                              category: widget.category,
+                              gameMode: widget.gameMode,
                             ),
                           ),
                         ),
@@ -309,24 +305,20 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       gameState: gameState,
                     ),
                     Expanded(
-                      child: InteractiveViewer(
-                        minScale: 1.0,
-                        maxScale: 3.0,
-                        child: Padding(
-                          padding: AppSpacing.paddingMd,
-                          child: Center(
-                            child: WordSearchGrid(
-                              difficulty: widget.difficulty,
-                              category: widget.category,
-                              gameMode: widget.gameMode,
-                            ),
+                      child: Padding(
+                        padding: AppSpacing.paddingMd,
+                        child: Center(
+                          child: WordSearchGrid(
+                            difficulty: widget.difficulty,
+                            category: widget.category,
+                            gameMode: widget.gameMode,
                           ),
                         ),
                       ),
                     ),
-                    // Fixed height footer in portrait
-                    SizedBox(
-                      height: 140,
+                    // Footer in portrait - takes only space needed, can expand if available
+                    Flexible(
+                      fit: FlexFit.loose,
                       child: GameFooter(
                         gameState: gameState,
                         hintsRemaining:
