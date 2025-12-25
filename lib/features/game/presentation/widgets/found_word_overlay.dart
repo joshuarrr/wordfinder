@@ -9,12 +9,14 @@ class FoundWordOverlay extends StatefulWidget {
     required this.puzzle,
     required this.foundWords,
     required this.cellSize,
+    required this.margin,
     this.onAnimationComplete,
   });
 
   final Puzzle puzzle;
   final Set<String> foundWords;
   final double cellSize;
+  final double margin;
   final VoidCallback? onAnimationComplete;
 
   @override
@@ -96,6 +98,7 @@ class _FoundWordOverlayState extends State<FoundWordOverlay>
               foundWords: widget.foundWords,
               wordPositions: widget.puzzle.words,
               cellSize: widget.cellSize,
+              margin: widget.margin,
               animationValue: _animation.value,
               animatingWord: _animatingWord,
               animatedWords: _animatedWords,

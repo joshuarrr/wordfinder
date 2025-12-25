@@ -9,11 +9,13 @@ class WordFoundAnimation extends StatelessWidget {
     super.key,
     required this.wordPosition,
     required this.cellSize,
+    required this.margin,
     required this.onComplete,
   });
 
   final WordPosition wordPosition;
   final double cellSize;
+  final double margin;
   final VoidCallback onComplete;
 
   @override
@@ -23,6 +25,7 @@ class WordFoundAnimation extends StatelessWidget {
         painter: _FlashPainter(
           wordPosition: wordPosition,
           cellSize: cellSize,
+          margin: margin,
         ),
         child: Container(),
       )
@@ -40,10 +43,12 @@ class _FlashPainter extends CustomPainter {
   _FlashPainter({
     required this.wordPosition,
     required this.cellSize,
+    required this.margin,
   });
 
   final WordPosition wordPosition;
   final double cellSize;
+  final double margin;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -54,9 +59,7 @@ class _FlashPainter extends CustomPainter {
     // Highlight all cells in the word
     for (final (row, col) in wordPosition.cells) {
       const padding = 4.0;
-      const border = 2.0;
-      const margin = 2.0;
-      const totalOffset = padding + border;
+      const totalOffset = padding;
       final cellWithMargin = cellSize + (margin * 2);
       
       final x = totalOffset + (col * cellWithMargin) + margin;

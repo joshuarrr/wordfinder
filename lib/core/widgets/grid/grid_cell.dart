@@ -16,6 +16,7 @@ class GridCell extends StatelessWidget {
     this.selectionColor,
     this.cellSize = 40,
     this.isShaking = false,
+    this.fontSizeMultiplier = 0.5,
   });
 
   final String letter;
@@ -27,6 +28,7 @@ class GridCell extends StatelessWidget {
   final Color? selectionColor;
   final double cellSize;
   final bool isShaking;
+  final double fontSizeMultiplier;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +54,7 @@ class GridCell extends StatelessWidget {
           duration: Duration(milliseconds: isCelebrating ? 300 : 100),
           style: AppTypography.gridLetter.copyWith(
             color: textColor,
-            fontSize: cellSize * 0.5,
+            fontSize: cellSize * fontSizeMultiplier,
             decoration: isFound && !isCelebrating
                 ? TextDecoration.lineThrough
                 : null,

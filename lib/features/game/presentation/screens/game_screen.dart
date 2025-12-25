@@ -305,7 +305,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: AppSpacing.paddingMd,
+                        // Remove padding for hard/medium mode in portrait
+                        padding: (widget.difficulty == Difficulty.hard ||
+                                    widget.difficulty == Difficulty.medium) &&
+                                !isLandscape
+                            ? EdgeInsets.zero
+                            : AppSpacing.paddingMd,
                         child: Center(
                           child: WordSearchGrid(
                             difficulty: widget.difficulty,

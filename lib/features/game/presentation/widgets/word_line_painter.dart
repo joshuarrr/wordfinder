@@ -8,6 +8,7 @@ class WordLinePainter extends CustomPainter {
     required this.foundWords,
     required this.wordPositions,
     required this.cellSize,
+    required this.margin,
     required this.animationValue,
     this.animatingWord,
     this.animatedWords = const {},
@@ -16,6 +17,7 @@ class WordLinePainter extends CustomPainter {
   final Set<String> foundWords;
   final List<WordPosition> wordPositions;
   final double cellSize;
+  final double margin;
   final double animationValue; // 0.0 to 1.0 for animation
   final String? animatingWord; // The word currently being animated
   final Set<String> animatedWords; // Words that have completed animation
@@ -31,7 +33,7 @@ class WordLinePainter extends CustomPainter {
     // Draw lines for found words
     for (final wordPos in wordPositions) {
       if (foundWords.contains(wordPos.word)) {
-        final path = wordPos.getLinePath(cellSize, 2.0);
+        final path = wordPos.getLinePath(cellSize, margin);
         
         // Only animate the currently animating word
         if (wordPos.word == animatingWord && animationValue < 1.0) {
@@ -68,6 +70,7 @@ class WordLinePainter extends CustomPainter {
     return oldDelegate.foundWords != foundWords ||
         oldDelegate.animationValue != animationValue ||
         oldDelegate.cellSize != cellSize ||
+        oldDelegate.margin != margin ||
         oldDelegate.animatingWord != animatingWord ||
         oldDelegate.animatedWords != animatedWords;
   }

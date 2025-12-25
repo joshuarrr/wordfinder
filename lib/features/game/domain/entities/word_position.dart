@@ -49,8 +49,7 @@ class WordPosition {
   /// Get the center point of a cell
   Offset _getCellCenter(int row, int col, double cellSize, double margin) {
     const padding = 4.0; // Container padding
-    const border = 2.0; // Border width
-    const totalOffset = padding + border;
+    const totalOffset = padding;
     
     final cellWithMargin = cellSize + (margin * 2);
     final x = totalOffset + (col * cellWithMargin) + margin + (cellSize / 2);
