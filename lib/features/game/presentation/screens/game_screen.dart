@@ -218,10 +218,29 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     onPressed: () => _showExitDialog(context),
                   ),
                   centerTitle: true,
-                  title: Text(
-                    widget.difficulty.displayName.toUpperCase(),
-                    style: AppTypography.titleLarge.copyWith(
-                      fontWeight: FontWeight.bold,
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Transform.translate(
+                      offset: const Offset(-16, 0), // Half of icon width + spacing
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.category.emoji,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              widget.category.displayName,
+                              style: AppTypography.titleLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   actions: [

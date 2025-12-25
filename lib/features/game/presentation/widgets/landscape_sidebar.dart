@@ -71,7 +71,7 @@ class LandscapeSidebar extends StatelessWidget {
                   Text(category.emoji, style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 4),
                   Text(
-                    difficulty.displayName.toUpperCase(),
+                    category.displayName,
                     style: AppTypography.titleSmall.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -95,25 +95,17 @@ class LandscapeSidebar extends StatelessWidget {
             ),
             // Divider
             Container(height: 1, color: AppColors.divider),
-            // Sub-header: category name + score
+            // Score display
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.sm,
               ),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(category.emoji, style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
                   Text(
-                    category.displayName,
-                    style: AppTypography.titleSmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'SCORE: ',
+                    'PUZZLE SCORE: ',
                     style: AppTypography.labelMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),

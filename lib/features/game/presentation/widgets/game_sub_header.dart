@@ -37,20 +37,11 @@ class GameSubHeader extends StatelessWidget {
         ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // Category with emoji
-          Text(category.emoji, style: const TextStyle(fontSize: 18)),
-          const SizedBox(width: 8),
-          Text(
-            category.displayName,
-            style: AppTypography.titleSmall.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Spacer(),
           // Puzzle score
           Text(
-            'SCORE: ',
+            'PUZZLE SCORE: ',
             style: AppTypography.labelMedium.copyWith(
               color: AppColors.textSecondary,
             ),
