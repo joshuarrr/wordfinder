@@ -15,6 +15,8 @@ This guide covers deploying the Word Finder app to:
 
 ## 1. Web Deployment (Vercel)
 
+**Important**: Vercel doesn't have Flutter SDK installed. You must build Flutter web locally first, then deploy the static files.
+
 ### Option A: Using Vercel CLI (Recommended)
 
 1. **Install Vercel CLI** (if not already installed):
@@ -38,32 +40,39 @@ Follow the prompts to:
 - Configure project settings
 - Deploy
 
-### Option B: Using Git Integration
+### Option B: Using Git Integration with GitHub Actions (Recommended)
 
-1. **Create `vercel.json`** in project root:
-```json
-{
-  "buildCommand": "flutter build web --release",
-  "outputDirectory": "build/web",
-  "framework": null,
-  "installCommand": "flutter pub get"
-}
+**Note**: Vercel doesn't have Flutter SDK, so we use GitHub Actions to build, then deploy to Vercel.
+
+1. **Set up GitHub Actions** (already configured in `.github/workflows/deploy-vercel.yml`):
+   - The workflow builds Flutter web and deploys to Vercel automatically
+
+2. **Configure Vercel Secrets** in GitHub:
+   - Go to your GitHub repo → Settings → Secrets and variables → Actions
+   - Add these secrets:
+     - `VERCEL_TOKEN`: Get from [Vercel Settings → Tokens](https://vercel.com/account/tokens)
+     - `VERCEL_ORG_ID`: Found in Vercel project settings → General
+     - `VERCEL_PROJECT_ID`: Found in Vercel project settings → General
+
+3. **Push to main branch**:
+   - The workflow will automatically build and deploy on each push
+
+### Option B2: Manual Git Integration (Build Locally First)
+
+1. **Build Flutter web locally**:
+```bash
+flutter build web --release
 ```
 
-2. **Create `.vercelignore`** (optional):
-```
-ios/
-android/
-build/ios/
-build/android/
-*.iml
-.DS_Store
-```
+2. **Commit the build folder** (or use .gitignore and deploy manually):
+   - Option A: Add `build/web` to git and commit
+   - Option B: Deploy manually using Option A or C
 
-3. **Push to Git** and connect your repository to Vercel:
+3. **Configure Vercel**:
    - Go to [vercel.com](https://vercel.com)
    - Import your Git repository
-   - Vercel will auto-detect the build settings from `vercel.json`
+   - Set Output Directory to `build/web`
+   - Remove build/install commands (Vercel will serve static files)
 
 ### Option C: Manual Deployment
 
@@ -110,15 +119,21 @@ open ios/Runner.xcworkspace
    - Select your Team (Apple Developer account)
    - Ensure Bundle Identifier is `fun.mindcookie.wordsearch`
 
-3. **Update Version & Build Number**:
+4. **Update Version & Build Number**:
    - In `pubspec.yaml`, update version (e.g., `1.0.0+1`)
    - Or set in Xcode: General tab → Version and Build
 
 ### Step 2: Build Archive
 
+**Important**: Before archiving, ensure Flutter framework is built:
+```bash
+flutter build ios --release --no-codesign
+```
+
 1. **Select "Any iOS Device" or a specific device** from the device dropdown in Xcode
 
 2. **Create Archive**:
+   - Product → Clean Build Folder (Cmd+Shift+K)
    - Product → Archive
    - Wait for build to complete
 
@@ -233,6 +248,16 @@ open ios/Runner.xcworkspace
 - **Bundle ID conflicts**: Ensure unique bundle identifier
 - **Missing provisioning profile**: Enable "Automatically manage signing"
 - **Archive not appearing**: Ensure "Any iOS Device" is selected, not simulator
+- **"module 'Flutter' not found" errors**: 
+  1. Build Flutter framework first: `flutter build ios --release --no-codesign`
+  2. Clean Xcode derived data: `rm -rf ~/Library/Developer/Xcode/DerivedData`
+  3. Clean Flutter: `flutter clean && flutter pub get`
+  4. Reinstall pods: `cd ios && pod install`
+  5. In Xcode: Product → Clean Build Folder (Cmd+Shift+K)
+  6. Close and reopen Xcode
+  7. Try archiving again
+  8. **If still failing**: The VerifyModule errors are often non-fatal. Try building from command line: `flutter build ipa --release` (creates .ipa file directly)
+- **Deprecation warnings** (e.g., `allowBluetooth` in audioplayers_darwin): These are warnings from plugins and won't block the build. They'll be fixed in future plugin updates.
 
 ---
 
