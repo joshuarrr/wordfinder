@@ -25,13 +25,11 @@ jobs:
       - name: Build web app
         run: flutter build web --release
       
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-      
-      - name: Deploy to Vercel
-        working-directory: ./build/web
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - name: Commit build files
         run: |
-          vercel --prod --yes --token $VERCEL_TOKEN
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -f build/web
+          git commit -m "Build web app for Vercel [skip ci]" || exit 0
+          git push
 
