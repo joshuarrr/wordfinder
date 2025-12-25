@@ -13,16 +13,25 @@ class AudioService {
   bool _buttonSoundPreloaded = false;
   bool _audioInitialized = false;
 
+  /// Get the correct asset path for the platform
+  String _getAssetPath(String path) {
+    // On web, assets need the full path including 'assets/' prefix
+    if (kIsWeb) {
+      return 'assets/$path';
+    }
+    return path;
+  }
+
   /// Initialize audio (required for web - needs user interaction)
   Future<void> initializeAudio() async {
     if (_audioInitialized) return;
     try {
-      // On web, we need to play a silent sound first to unlock audio
+      // On web, we need to play a sound first to unlock audio context
       if (kIsWeb) {
         await _buttonPlayer.setReleaseMode(ReleaseMode.stop);
-        // Try to play a very short silent sound to unlock audio context
-        await _buttonPlayer.play(AssetSource('sounds/Heavy-popping.wav'));
-        await Future.delayed(const Duration(milliseconds: 10));
+        // Play a sound to unlock audio context (must be user-initiated)
+        await _buttonPlayer.play(AssetSource(_getAssetPath('sounds/Heavy-popping.wav')));
+        await Future.delayed(const Duration(milliseconds: 50));
         await _buttonPlayer.stop();
       }
       _audioInitialized = true;
@@ -37,10 +46,12 @@ class AudioService {
   Future<void> preloadButtonClick() async {
     if (_buttonSoundPreloaded) return;
     try {
-      await _buttonPlayer.setSource(AssetSource('sounds/Heavy-popping.wav'));
+      await _buttonPlayer.setSource(AssetSource(_getAssetPath('sounds/Heavy-popping.wav')));
       _buttonSoundPreloaded = true;
     } catch (e) {
-      // Silently fail if audio can't be preloaded
+      if (kDebugMode) {
+        print('Audio preload error: $e');
+      }
     }
   }
 
@@ -51,13 +62,14 @@ class AudioService {
       if (!_audioInitialized) {
         await initializeAudio();
       }
+      final assetPath = _getAssetPath('sounds/Heavy-popping.wav');
       if (_buttonSoundPreloaded) {
         // If preloaded, stop any current playback and play from start
         await _buttonPlayer.stop();
-        await _buttonPlayer.play(AssetSource('sounds/Heavy-popping.wav'));
+        await _buttonPlayer.play(AssetSource(assetPath));
       } else {
         // If not preloaded, play from source (will be slower first time)
-        await _buttonPlayer.play(AssetSource('sounds/Heavy-popping.wav'));
+        await _buttonPlayer.play(AssetSource(assetPath));
       }
     } catch (e) {
       if (kDebugMode) {
@@ -77,7 +89,7 @@ class AudioService {
       final soundFile = soundIndex == 0
           ? 'sounds/dry-pop-up-notification-alert-2356.wav'
           : 'sounds/bubble-pop-up-alert-notification.wav';
-      await _wordFoundPlayer.play(AssetSource(soundFile));
+      await _wordFoundPlayer.play(AssetSource(_getAssetPath(soundFile)));
     } catch (e) {
       if (kDebugMode) {
         print('Audio playback error: $e');
@@ -92,7 +104,7 @@ class AudioService {
       if (!_audioInitialized) {
         await initializeAudio();
       }
-      await _completionPlayer.play(AssetSource('sounds/davince21__harp-motif1.mp3'));
+      await _completionPlayer.play(AssetSource(_getAssetPath('sounds/davince21__harp-motif1.mp3')));
     } catch (e) {
       if (kDebugMode) {
         print('Audio playback error: $e');
