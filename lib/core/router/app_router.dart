@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/game/presentation/screens/game_screen.dart';
 import '../../features/category/presentation/screens/category_screen.dart';
+import '../../features/daily/presentation/screens/daily_puzzle_screen.dart';
 import '../../features/difficulty/presentation/screens/difficulty_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/stats/presentation/screens/stats_screen.dart';
@@ -94,6 +95,19 @@ final appRouter = GoRouter(
             category: args?['category'] as WordCategory? ?? WordCategory.animals,
             difficulty: args?['difficulty'] as Difficulty? ?? Difficulty.easy,
           ),
+          transitionsBuilder: _pushTransition,
+        );
+      },
+    ),
+
+    // Daily puzzle screen
+    GoRoute(
+      path: AppRoutes.daily,
+      name: 'daily',
+      pageBuilder: (context, state) {
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: const DailyPuzzleScreen(),
           transitionsBuilder: _pushTransition,
         );
       },

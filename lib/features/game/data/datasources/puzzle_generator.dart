@@ -10,26 +10,59 @@ class PuzzleGeneratorParams {
   final Difficulty difficulty;
   final WordCategory category;
   final GameMode gameMode;
+  final int? seed;
 
   const PuzzleGeneratorParams({
     required this.difficulty,
     required this.category,
     required this.gameMode,
+    this.seed,
   });
+}
+
+/// Parameters for daily puzzle generation (needed for compute isolate)
+class DailyPuzzleGeneratorParams {
+  final DateTime date;
+
+  const DailyPuzzleGeneratorParams({required this.date});
 }
 
 /// Top-level function for compute isolate
 Puzzle generatePuzzleIsolate(PuzzleGeneratorParams params) {
-  return PuzzleGenerator()._generateSync(
+  return PuzzleGenerator(seed: params.seed)._generateSync(
     difficulty: params.difficulty,
     category: params.category,
     gameMode: params.gameMode,
   );
 }
 
+/// Top-level function for daily puzzle compute isolate
+Puzzle generateDailyPuzzleIsolate(DailyPuzzleGeneratorParams params) {
+  return PuzzleGenerator.forDaily(params.date).generateDailySync(params.date);
+}
+
 /// Generates word search puzzles
 class PuzzleGenerator {
-  final Random _random = Random();
+  final Random _random;
+
+  /// Create a generator with optional seed for deterministic generation
+  PuzzleGenerator({int? seed}) : _random = seed != null ? Random(seed) : Random();
+
+  /// Create a generator for daily puzzles using date as seed
+  factory PuzzleGenerator.forDaily(DateTime date) {
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    // Use a stable seed based on date components to ensure consistency
+    final seed = dateOnly.year * 10000 + dateOnly.month * 100 + dateOnly.day;
+    return PuzzleGenerator(seed: seed);
+  }
+
+  /// Get the category for a specific date (rotates through categories)
+  static WordCategory getCategoryForDate(DateTime date) {
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    final startOfYear = DateTime(date.year, 1, 1);
+    final dayOfYear = dateOnly.difference(startOfYear).inDays;
+    return WordCategory.values[dayOfYear % WordCategory.values.length];
+  }
 
   /// Generate a puzzle asynchronously in an isolate
   Future<Puzzle> generateAsync({
@@ -44,6 +77,24 @@ class PuzzleGenerator {
         category: category,
         gameMode: gameMode,
       ),
+    );
+  }
+
+  /// Generate a daily puzzle asynchronously in an isolate
+  Future<Puzzle> generateDailyAsync(DateTime date) {
+    return compute(
+      generateDailyPuzzleIsolate,
+      DailyPuzzleGeneratorParams(date: date),
+    );
+  }
+
+  /// Generate a daily puzzle synchronously
+  Puzzle generateDailySync(DateTime date) {
+    final category = getCategoryForDate(date);
+    return _generateSync(
+      difficulty: Difficulty.medium,
+      category: category,
+      gameMode: GameMode.daily,
     );
   }
 

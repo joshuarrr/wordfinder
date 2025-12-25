@@ -9,6 +9,7 @@ import '../../../../core/services/audio_service.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/breakpoints.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../daily/presentation/providers/daily_providers.dart';
 import '../../../score/presentation/widgets/cumulative_score_widget.dart';
 
 /// Home screen with game mode selection
@@ -163,39 +164,107 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildDailyPuzzleCard(BuildContext context, WidgetRef ref) {
     final audioService = ref.read(audioServiceProvider);
+    final asyncCompleted = ref.watch(isTodayPuzzleCompletedProvider);
+    final asyncStreak = ref.watch(dailyStreakProvider);
+    final category = ref.watch(todayCategoryProvider);
+    
+    final isCompleted = asyncCompleted.valueOrNull ?? false;
+    final streak = asyncStreak.valueOrNull ?? 0;
     
     return GameCard(
       onTap: () {
         audioService.playButtonClick();
-        // TODO: Navigate to daily puzzle
+        context.push(AppRoutes.daily);
       },
-      color: AppColors.accent1.withValues(alpha: 0.2),
-      borderColor: AppColors.accent1,
+      color: isCompleted 
+          ? AppColors.success.withValues(alpha: 0.2)
+          : AppColors.accent1.withValues(alpha: 0.2),
+      borderColor: isCompleted ? AppColors.success : AppColors.accent1,
       showShadow: false,
       child: Row(
         children: [
-          CalendarDateWidget(
-            backgroundColor: AppColors.accent1,
+          // Calendar widget with completion badge
+          Stack(
+            children: [
+              CalendarDateWidget(
+                backgroundColor: isCompleted ? AppColors.success : AppColors.accent1,
+              ),
+              if (isCompleted)
+                Positioned(
+                  right: -4,
+                  top: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.surface,
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+            ],
           ),
           AppSpacing.hGapMd,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Daily Puzzle',
-                  style: AppTypography.titleMedium,
+                Row(
+                  children: [
+                    Text(
+                      'Daily Puzzle',
+                      style: AppTypography.titleMedium,
+                    ),
+                    if (streak > 0) ...[
+                      AppSpacing.hGapSm,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent1.withValues(alpha: 0.2),
+                          borderRadius: AppSpacing.borderRadiusSm,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🔥', style: TextStyle(fontSize: 10)),
+                            const SizedBox(width: 2),
+                            Text(
+                              '$streak',
+                              style: AppTypography.labelSmall.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 Text(
-                  'New puzzle every day!',
-                  style: AppTypography.bodySmall,
+                  isCompleted 
+                      ? 'New puzzle tomorrow!'
+                      : '${category.emoji} ${category.displayName}',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: isCompleted ? AppColors.success : AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
           Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.textSecondary,
+            isCompleted ? Icons.check_circle_rounded : Icons.chevron_right_rounded,
+            color: isCompleted ? AppColors.success : AppColors.textSecondary,
           ),
         ],
       ),

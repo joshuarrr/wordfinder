@@ -222,7 +222,7 @@ class _PuzzleAsyncProviderElement
 }
 
 String _$asyncGameStateNotifierHash() =>
-    r'0bb076e54683488cbdd64ef8b4a3e8ee38d5b66b';
+    r'944d10684aa200928f35c7c49f9d59527ef780f9';
 
 abstract class _$AsyncGameStateNotifier
     extends BuildlessAutoDisposeAsyncNotifier<GameState> {

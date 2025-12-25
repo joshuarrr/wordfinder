@@ -9,6 +9,7 @@ import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/game_state.dart';
 import '../../domain/entities/puzzle.dart';
 import '../providers/game_providers.dart';
+import '../../../daily/presentation/providers/daily_providers.dart';
 import 'found_word_overlay.dart';
 import 'score_popup.dart';
 import 'word_found_animation.dart';
@@ -20,11 +21,13 @@ class WordSearchGrid extends ConsumerStatefulWidget {
     required this.difficulty,
     required this.category,
     required this.gameMode,
+    this.gameStateProvider,
   });
 
   final Difficulty difficulty;
   final WordCategory category;
   final GameMode gameMode;
+  final AsyncGameStateNotifierProvider? gameStateProvider;
 
   @override
   ConsumerState<WordSearchGrid> createState() => _WordSearchGridState();
@@ -41,26 +44,43 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
 
   @override
   Widget build(BuildContext context) {
-    final gameStateProvider = asyncGameStateNotifierProvider(
-      difficulty: widget.difficulty,
-      category: widget.category,
-      gameMode: widget.gameMode,
-    );
+    // Use daily provider if in daily mode, otherwise use regular provider
+    final AsyncValue<GameState> asyncGameState;
+    final AsyncGameStateNotifierProvider? gameStateProvider;
 
-    final asyncGameState = ref.watch(gameStateProvider);
+    if (widget.gameMode == GameMode.daily) {
+      // Use daily puzzle provider
+      asyncGameState = ref.watch(dailyGameStateNotifierProvider);
+      gameStateProvider = null; // Daily provider uses different notifier type
+    } else {
+      gameStateProvider =
+          widget.gameStateProvider ??
+          asyncGameStateNotifierProvider(
+            difficulty: widget.difficulty,
+            category: widget.category,
+            gameMode: widget.gameMode,
+          );
+      asyncGameState = ref.watch(gameStateProvider);
+    }
 
     // Handle loading/error states
     return asyncGameState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, st) => Center(child: Text('Error: $e')),
-      data: (gameState) => _buildGrid(context, gameState, gameStateProvider),
+      data: (gameState) => _buildGrid(
+        context,
+        gameState,
+        gameStateProvider,
+        widget.gameMode == GameMode.daily,
+      ),
     );
   }
 
   Widget _buildGrid(
     BuildContext context,
     GameState gameState,
-    AsyncGameStateNotifierProvider gameStateProvider,
+    AsyncGameStateNotifierProvider? gameStateProvider,
+    bool isDailyMode,
   ) {
     final puzzle = gameState.puzzle;
     final selectedPath = gameState.selectedPath;
@@ -130,7 +150,13 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
               setState(() => _pendingFlashWord = wordToFlash);
               _showWordFoundCelebration(wordToFlash, puzzle, _currentCellSize);
               // Clear lastFoundWord from state so we don't re-trigger
-              ref.read(gameStateProvider.notifier).clearLastFoundWord();
+              if (isDailyMode) {
+                ref
+                    .read(dailyGameStateNotifierProvider.notifier)
+                    .clearLastFoundWord();
+              } else if (gameStateProvider != null) {
+                ref.read(gameStateProvider.notifier).clearLastFoundWord();
+              }
             }
           });
         }
@@ -156,6 +182,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                             puzzle.size,
                             _currentCellSize,
                             _currentMargin,
+                            isDailyMode,
                             gameStateProvider,
                           );
                         },
@@ -166,15 +193,16 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                               puzzle.size,
                               _currentCellSize,
                               _currentMargin,
+                              isDailyMode,
                               gameStateProvider,
                             );
                           }
                         },
                         onPointerUp: (event) {
-                          _handlePointerUp(gameStateProvider);
+                          _handlePointerUp(isDailyMode, gameStateProvider);
                         },
                         onPointerCancel: (event) {
-                          _handlePointerUp(gameStateProvider);
+                          _handlePointerUp(isDailyMode, gameStateProvider);
                         },
                         child: GestureDetector(
                           // Fallback for mobile
@@ -184,6 +212,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                               puzzle.size,
                               _currentCellSize,
                               _currentMargin,
+                              isDailyMode,
                               gameStateProvider,
                             );
                           },
@@ -193,11 +222,12 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                               puzzle.size,
                               _currentCellSize,
                               _currentMargin,
+                              isDailyMode,
                               gameStateProvider,
                             );
                           },
                           onPanEnd: (_) {
-                            _handlePanEnd(gameStateProvider);
+                            _handlePanEnd(isDailyMode, gameStateProvider);
                           },
                           child: Container(
                             width: constrainedGridSize,
@@ -418,12 +448,55 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     return false;
   }
 
+  // Helper methods to call the appropriate notifier based on mode
+  void _startSelection(
+    int row,
+    int col,
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
+  ) {
+    if (isDailyMode) {
+      ref
+          .read(dailyGameStateNotifierProvider.notifier)
+          .startSelection(row, col);
+    } else if (provider != null) {
+      ref.read(provider.notifier).startSelection(row, col);
+    }
+  }
+
+  void _addToSelection(
+    int row,
+    int col,
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
+  ) {
+    if (isDailyMode) {
+      ref
+          .read(dailyGameStateNotifierProvider.notifier)
+          .addToSelection(row, col);
+    } else if (provider != null) {
+      ref.read(provider.notifier).addToSelection(row, col);
+    }
+  }
+
+  void _submitSelection(
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
+  ) {
+    if (isDailyMode) {
+      ref.read(dailyGameStateNotifierProvider.notifier).submitSelection();
+    } else if (provider != null) {
+      ref.read(provider.notifier).submitSelection();
+    }
+  }
+
   void _handlePointerDown(
     PointerDownEvent event,
     int gridSize,
     double cellSize,
     double margin,
-    AsyncGameStateNotifierProvider provider,
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
   ) {
     final position = _getCellPosition(
       event.localPosition,
@@ -436,7 +509,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
         _isDragging = true;
         _lastCell = position;
       });
-      ref.read(provider.notifier).startSelection(position.$1, position.$2);
+      _startSelection(position.$1, position.$2, isDailyMode, provider);
     }
   }
 
@@ -445,7 +518,8 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     int gridSize,
     double cellSize,
     double margin,
-    AsyncGameStateNotifierProvider provider,
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
   ) {
     if (!_isDragging) return;
 
@@ -458,7 +532,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     );
     if (position != null && position != _lastCell) {
       setState(() => _lastCell = position);
-      ref.read(provider.notifier).addToSelection(position.$1, position.$2);
+      _addToSelection(position.$1, position.$2, isDailyMode, provider);
     } else {
       // Check adjacent cells for very sensitive detection
       if (_lastCell != null) {
@@ -480,7 +554,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
               );
               if (checkPos?.$1 == checkRow && checkPos?.$2 == checkCol) {
                 setState(() => _lastCell = (checkRow, checkCol));
-                ref.read(provider.notifier).addToSelection(checkRow, checkCol);
+                _addToSelection(checkRow, checkCol, isDailyMode, provider);
                 return;
               }
             }
@@ -490,13 +564,16 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     }
   }
 
-  void _handlePointerUp(AsyncGameStateNotifierProvider provider) {
+  void _handlePointerUp(
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
+  ) {
     if (_isDragging) {
       setState(() {
         _isDragging = false;
         _lastCell = null;
       });
-      ref.read(provider.notifier).submitSelection();
+      _submitSelection(isDailyMode, provider);
     }
   }
 
@@ -505,7 +582,8 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     int gridSize,
     double cellSize,
     double margin,
-    AsyncGameStateNotifierProvider provider,
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
   ) {
     final position = _getCellPosition(
       details.localPosition,
@@ -518,7 +596,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
         _isDragging = true;
         _lastCell = position;
       });
-      ref.read(provider.notifier).startSelection(position.$1, position.$2);
+      _startSelection(position.$1, position.$2, isDailyMode, provider);
     }
   }
 
@@ -527,7 +605,8 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     int gridSize,
     double cellSize,
     double margin,
-    AsyncGameStateNotifierProvider provider,
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
   ) {
     if (!_isDragging) return;
 
@@ -539,17 +618,20 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     );
     if (position != null && position != _lastCell) {
       setState(() => _lastCell = position);
-      ref.read(provider.notifier).addToSelection(position.$1, position.$2);
+      _addToSelection(position.$1, position.$2, isDailyMode, provider);
     }
   }
 
-  void _handlePanEnd(AsyncGameStateNotifierProvider provider) {
+  void _handlePanEnd(
+    bool isDailyMode,
+    AsyncGameStateNotifierProvider? provider,
+  ) {
     if (_isDragging) {
       setState(() {
         _isDragging = false;
         _lastCell = null;
       });
-      ref.read(provider.notifier).submitSelection();
+      _submitSelection(isDailyMode, provider);
     }
   }
 
