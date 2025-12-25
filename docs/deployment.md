@@ -57,22 +57,29 @@ Follow the prompts to:
 3. **Push to main branch**:
    - The workflow will automatically build and deploy on each push
 
-### Option B2: Manual Git Integration (Build Locally First)
+### Option B2: Manual Git Integration (Requires Vercel Dashboard Update)
 
-1. **Build Flutter web locally**:
+**CRITICAL**: You must update Vercel project settings in the dashboard:
+
+1. **Go to Vercel Dashboard**:
+   - Navigate to your project → **Settings** → **General**
+   - Scroll to **Build & Development Settings**
+
+2. **Remove Build Commands**:
+   - **Build Command**: Delete/clear this field (leave empty)
+   - **Install Command**: Delete/clear this field (leave empty)
+   - **Output Directory**: Set to `build/web`
+   - Click **Save**
+
+3. **Build and commit** (since `build/` is gitignored, you need to commit it):
 ```bash
 flutter build web --release
+git add -f build/web
+git commit -m "Add web build for Vercel"
+git push
 ```
 
-2. **Commit the build folder** (or use .gitignore and deploy manually):
-   - Option A: Add `build/web` to git and commit
-   - Option B: Deploy manually using Option A or C
-
-3. **Configure Vercel**:
-   - Go to [vercel.com](https://vercel.com)
-   - Import your Git repository
-   - Set Output Directory to `build/web`
-   - Remove build/install commands (Vercel will serve static files)
+**Note**: For automatic builds without committing build folder, use **Option B (GitHub Actions)** instead.
 
 ### Option C: Manual Deployment
 
@@ -231,6 +238,11 @@ open ios/Runner.xcworkspace
 
 ### Web Deployment Issues
 
+- **"flutter: command not found" error**: Vercel doesn't have Flutter SDK. You must:
+  1. Go to Vercel Dashboard → Project Settings → General
+  2. Remove/clear **Build Command** and **Install Command** fields
+  3. Set **Output Directory** to `build/web`
+  4. Build locally and commit `build/web` folder, OR use GitHub Actions workflow
 - **Build fails**: Ensure Flutter web is enabled (`flutter config --enable-web`)
 - **Assets not loading**: Check `pubspec.yaml` assets are correctly listed
 - **Routing issues**: Configure redirects in `vercel.json`:
