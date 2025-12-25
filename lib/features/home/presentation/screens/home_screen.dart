@@ -24,10 +24,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Preload button click sound for instant playback
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(audioServiceProvider).preloadButtonClick();
-    });
   }
 
   @override

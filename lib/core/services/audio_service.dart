@@ -10,35 +10,17 @@ class AudioService {
   final AudioPlayer _completionPlayer = AudioPlayer();
   final math.Random _random = math.Random();
 
-  bool _buttonSoundPreloaded = false;
-
   /// Get asset path - on web, Flutter uses 'assets/' prefix
   String _assetPath(String path) {
     return kIsWeb ? 'assets/$path' : path;
   }
 
-  /// Preload button click sound for instant playback
-  Future<void> preloadButtonClick() async {
-    if (_buttonSoundPreloaded) return;
-    try {
-      await _buttonPlayer.setSource(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
-      _buttonSoundPreloaded = true;
-    } catch (e) {
-      // Silently fail if audio can't be preloaded
-    }
-  }
-
   /// Play button click sound (Heavy-popping.wav)
   Future<void> playButtonClick() async {
     try {
-      if (_buttonSoundPreloaded) {
-        // If preloaded, stop any current playback and play from start
-        await _buttonPlayer.stop();
-        await _buttonPlayer.play(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
-      } else {
-        // If not preloaded, play from source (will be slower first time)
-        await _buttonPlayer.play(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
-      }
+      // Stop any current playback and play from source (same pattern as game sounds)
+      await _buttonPlayer.stop();
+      await _buttonPlayer.play(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
     } catch (e) {
       // Silently fail if audio can't be played
     }
