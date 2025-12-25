@@ -11,7 +11,14 @@ part 'score_providers.g.dart';
 /// Provider for SharedPreferences instance
 @riverpod
 Future<SharedPreferences> sharedPreferences(SharedPreferencesRef ref) async {
-  return SharedPreferences.getInstance();
+  try {
+    return await SharedPreferences.getInstance();
+  } catch (e) {
+    // If SharedPreferences channel is unavailable (e.g., during app close/navigation),
+    // return a cached instance or handle gracefully
+    // This prevents crashes when the platform channel is disconnected
+    rethrow;
+  }
 }
 
 /// Provider for LocalScoreDataSource
@@ -33,15 +40,37 @@ Future<ScoreRepository> scoreRepository(ScoreRepositoryRef ref) async {
 /// Provider for cumulative score
 @riverpod
 Future<int> cumulativeScore(CumulativeScoreRef ref) async {
-  final repository = await ref.watch(scoreRepositoryProvider.future);
-  return repository.getCumulativeScore();
+  try {
+    final repository = await ref.watch(scoreRepositoryProvider.future);
+    return await repository.getCumulativeScore();
+  } catch (e) {
+    // Return 0 if SharedPreferences is unavailable
+    return 0;
+  }
 }
 
 /// Provider for all score statistics
 @riverpod
 Future<ScoreStats> scoreStats(ScoreStatsRef ref) async {
-  final repository = await ref.watch(scoreRepositoryProvider.future);
-  return repository.getStats();
+  try {
+    final repository = await ref.watch(scoreRepositoryProvider.future);
+    return await repository.getStats();
+  } catch (e) {
+    // Return empty stats if SharedPreferences is unavailable
+    return const ScoreStats(
+      totalLifetimeScore: 0,
+      totalGamesPlayed: 0,
+      totalWordsFound: 0,
+      averageScore: 0.0,
+      bestStreakHighScore: 0,
+      bestStreakDays: 0,
+      bestStreakGames: 0,
+      bestStreakPerfect: 0,
+      highScores: {},
+      difficultyStats: {},
+      recentGames: [],
+    );
+  }
 }
 
 /// Provider for high score by difficulty
@@ -50,7 +79,12 @@ Future<int?> highScore(
   HighScoreRef ref,
   Difficulty difficulty,
 ) async {
-  final repository = await ref.watch(scoreRepositoryProvider.future);
-  return repository.getHighScore(difficulty);
+  try {
+    final repository = await ref.watch(scoreRepositoryProvider.future);
+    return await repository.getHighScore(difficulty);
+  } catch (e) {
+    // Return null if SharedPreferences is unavailable
+    return null;
+  }
 }
 

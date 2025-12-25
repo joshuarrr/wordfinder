@@ -448,11 +448,8 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
 
     // Save score using repository
     try {
-      final repositoryAsync = ref.read(scoreRepositoryProvider);
-      final repository = await repositoryAsync.value;
-      if (repository != null) {
-        await repository.saveScore(gameScore);
-      }
+      final repository = await ref.read(scoreRepositoryProvider.future);
+      await repository.saveScore(gameScore);
 
       // Invalidate cumulative score provider to trigger update
       // This will cause any widgets watching these providers to rebuild
@@ -461,6 +458,8 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
     } catch (e) {
       // Handle error silently for now
       // In production, you might want to log this
+      // This can happen if SharedPreferences channel is unavailable
+      // (e.g., app is closing or platform channel disconnected)
     }
   }
 

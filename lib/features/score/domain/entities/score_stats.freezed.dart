@@ -28,9 +28,10 @@ mixin _$ScoreStats {
   int get bestStreakHighScore => throw _privateConstructorUsedError;
   int get bestStreakDays => throw _privateConstructorUsedError;
   int get bestStreakGames => throw _privateConstructorUsedError;
-  int get bestStreakPerfect => throw _privateConstructorUsedError;
+  int get bestStreakPerfect =>
+      throw _privateConstructorUsedError; // ignore: invalid_annotation_target
   @JsonKey(fromJson: _highScoresFromJson, toJson: _highScoresToJson)
-  Map<Difficulty, int> get highScores => throw _privateConstructorUsedError;
+  Map<Difficulty, int> get highScores => throw _privateConstructorUsedError; // ignore: invalid_annotation_target
   @JsonKey(fromJson: _difficultyStatsFromJson, toJson: _difficultyStatsToJson)
   Map<Difficulty, DifficultyStats> get difficultyStats =>
       throw _privateConstructorUsedError;
@@ -292,7 +293,9 @@ class _$ScoreStatsImpl implements _ScoreStats {
   final int bestStreakGames;
   @override
   final int bestStreakPerfect;
+  // ignore: invalid_annotation_target
   final Map<Difficulty, int> _highScores;
+  // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _highScoresFromJson, toJson: _highScoresToJson)
   Map<Difficulty, int> get highScores {
@@ -301,7 +304,9 @@ class _$ScoreStatsImpl implements _ScoreStats {
     return EqualUnmodifiableMapView(_highScores);
   }
 
+  // ignore: invalid_annotation_target
   final Map<Difficulty, DifficultyStats> _difficultyStats;
+  // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _difficultyStatsFromJson, toJson: _difficultyStatsToJson)
   Map<Difficulty, DifficultyStats> get difficultyStats {
@@ -424,10 +429,10 @@ abstract class _ScoreStats implements ScoreStats {
   @override
   int get bestStreakGames;
   @override
-  int get bestStreakPerfect;
+  int get bestStreakPerfect; // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _highScoresFromJson, toJson: _highScoresToJson)
-  Map<Difficulty, int> get highScores;
+  Map<Difficulty, int> get highScores; // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _difficultyStatsFromJson, toJson: _difficultyStatsToJson)
   Map<Difficulty, DifficultyStats> get difficultyStats;

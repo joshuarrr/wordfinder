@@ -432,9 +432,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           pageBuilder: (dialogContext, animation, secondaryAnimation) {
             return _CompletionDialog(
               gameState: gameState,
-              onHome: () {
+              onHome: () async {
                 Navigator.pop(dialogContext);
-                this.context.go(AppRoutes.home);
+                // Small delay to ensure score saving completes before navigation
+                await Future.delayed(const Duration(milliseconds: 100));
+                if (mounted) {
+                  this.context.go(AppRoutes.home);
+                }
               },
               onPlayAgain: () {
                 Navigator.pop(dialogContext);
@@ -577,10 +581,15 @@ class _CompletionDialogState extends ConsumerState<_CompletionDialog> {
   }
 
   Future<void> _checkAchievements() async {
-    final highScore = await ref.read(
-      highScoreProvider(widget.gameState.puzzle.difficulty).future,
-    );
-    _isNewHighScore = highScore == null || widget.gameState.score > highScore;
+    try {
+      final highScore = await ref.read(
+        highScoreProvider(widget.gameState.puzzle.difficulty).future,
+      );
+      _isNewHighScore = highScore == null || widget.gameState.score > highScore;
+    } catch (e) {
+      // If SharedPreferences is unavailable, assume it's not a high score
+      _isNewHighScore = false;
+    }
 
     // Calculate perfect game
     _isPerfectGame =

@@ -21,17 +21,19 @@ GameScore _$GameScoreFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$GameScore {
-  int get score => throw _privateConstructorUsedError;
+  int get score =>
+      throw _privateConstructorUsedError; // ignore: invalid_annotation_target
   @JsonKey(fromJson: _difficultyFromJson, toJson: _difficultyToJson)
-  Difficulty get difficulty => throw _privateConstructorUsedError;
+  Difficulty get difficulty => throw _privateConstructorUsedError; // ignore: invalid_annotation_target
   @JsonKey(fromJson: _categoryFromJson, toJson: _categoryToJson)
-  WordCategory get category => throw _privateConstructorUsedError;
+  WordCategory get category => throw _privateConstructorUsedError; // ignore: invalid_annotation_target
   @JsonKey(fromJson: _gameModeFromJson, toJson: _gameModeToJson)
   GameMode get gameMode => throw _privateConstructorUsedError;
   int get elapsedSeconds => throw _privateConstructorUsedError;
   int get wordsFound => throw _privateConstructorUsedError;
   int get totalWords => throw _privateConstructorUsedError;
-  int get hintsUsed => throw _privateConstructorUsedError;
+  int get hintsUsed =>
+      throw _privateConstructorUsedError; // ignore: invalid_annotation_target
   @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
   DateTime get completedAt => throw _privateConstructorUsedError;
   bool get isPerfectGame => throw _privateConstructorUsedError;
@@ -267,12 +269,15 @@ class _$GameScoreImpl implements _GameScore {
 
   @override
   final int score;
+  // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _difficultyFromJson, toJson: _difficultyToJson)
   final Difficulty difficulty;
+  // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _categoryFromJson, toJson: _categoryToJson)
   final WordCategory category;
+  // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _gameModeFromJson, toJson: _gameModeToJson)
   final GameMode gameMode;
@@ -284,6 +289,7 @@ class _$GameScoreImpl implements _GameScore {
   final int totalWords;
   @override
   final int hintsUsed;
+  // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
   final DateTime completedAt;
@@ -374,13 +380,13 @@ abstract class _GameScore implements GameScore {
       _$GameScoreImpl.fromJson;
 
   @override
-  int get score;
+  int get score; // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _difficultyFromJson, toJson: _difficultyToJson)
-  Difficulty get difficulty;
+  Difficulty get difficulty; // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _categoryFromJson, toJson: _categoryToJson)
-  WordCategory get category;
+  WordCategory get category; // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _gameModeFromJson, toJson: _gameModeToJson)
   GameMode get gameMode;
@@ -391,7 +397,7 @@ abstract class _GameScore implements GameScore {
   @override
   int get totalWords;
   @override
-  int get hintsUsed;
+  int get hintsUsed; // ignore: invalid_annotation_target
   @override
   @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
   DateTime get completedAt;
