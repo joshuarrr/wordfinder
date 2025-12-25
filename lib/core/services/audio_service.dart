@@ -18,8 +18,7 @@ class AudioService {
   /// Play button click sound (Heavy-popping.wav)
   Future<void> playButtonClick() async {
     try {
-      // Stop any current playback and play from source (same pattern as game sounds)
-      await _buttonPlayer.stop();
+      // Use same pattern as game sounds - direct play without stop
       await _buttonPlayer.play(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
     } catch (e) {
       // Silently fail if audio can't be played
