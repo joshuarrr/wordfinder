@@ -15,21 +15,42 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: AppSpacing.screenPadding,
-          child: Column(
-            children: [
-              const Spacer(),
-              // Title
-              _buildTitle(),
-              AppSpacing.vGapXxl,
-              // Game mode buttons
-              _buildGameModes(context),
-              const Spacer(),
-              // Bottom actions
-              _buildBottomActions(context),
-            ],
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Use scrollable layout for small screens (landscape)
+            if (constraints.maxHeight < 500) {
+              return SingleChildScrollView(
+                padding: AppSpacing.screenPadding,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildTitle(),
+                      AppSpacing.vGapLg,
+                      _buildGameModes(context),
+                      AppSpacing.vGapLg,
+                      _buildBottomActions(context),
+                    ],
+                  ),
+                ),
+              );
+            }
+            // Normal layout for larger screens
+            return Padding(
+              padding: AppSpacing.screenPadding,
+              child: Column(
+                children: [
+                  const Spacer(),
+                  _buildTitle(),
+                  AppSpacing.vGapXxl,
+                  _buildGameModes(context),
+                  const Spacer(),
+                  _buildBottomActions(context),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

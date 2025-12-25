@@ -38,7 +38,6 @@ class GameFooter extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header row: count + "Words to find" + help button
@@ -111,13 +110,12 @@ class GameFooter extends StatelessWidget {
               color: AppColors.divider,
             ),
             const SizedBox(height: 8),
-            // Word chips - scrollable
-            SizedBox(
-              height: 80,
+            // Word chips - flexible height (expands in sidebar, fixed in footer)
+            Expanded(
               child: SingleChildScrollView(
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: () {
                     final wordList = puzzle.words.map((wp) => wp.word).toList()
                       ..sort();

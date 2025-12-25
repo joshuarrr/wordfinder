@@ -68,42 +68,37 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate cell size based on available space (both width and height)
-        // Account for outer container padding
-        final availableWidth = constraints.maxWidth - (AppSpacing.md * 2);
-        final availableHeight = constraints.maxHeight - (AppSpacing.md * 2);
+        // Available space from constraints (already accounts for parent padding)
+        final availableWidth = constraints.maxWidth;
+        final availableHeight = constraints.maxHeight;
         
-        // Account for padding and borders inside the grid container
+        // Grid container has padding and border
         const padding = 4.0;
         const border = 2.0;
         const margin = 2.0; // Margin on each side of cell
         const totalPadding = (padding + border) * 2;
         
-        // Calculate available space for cells (after padding/border)
+        // Calculate space available for cells
         final cellAreaWidth = availableWidth - totalPadding;
         final cellAreaHeight = availableHeight - totalPadding;
         
-        // For N cells with margins: each cell takes (cellSize + margin*2) space
-        // Total space needed = N * (cellSize + margin*2) - margin*2 (last cell doesn't need trailing margin)
-        // Simplified: N * cellSize + (N-1) * margin*2 + margin*2 = N * cellSize + N * margin*2
-        // So: availableSpace = N * (cellSize + margin*2)
-        // Therefore: cellSize = (availableSpace / N) - margin*2
-        
+        // Each cell takes (cellSize + margin*2) space
+        // cellSize = (availableSpace / N) - margin*2
         final maxCellWidth = (cellAreaWidth / puzzle.size) - (margin * 2);
         final maxCellHeight = (cellAreaHeight / puzzle.size) - (margin * 2);
         
-        // Use the smaller dimension to ensure grid fits
+        // Use smaller dimension, floor to prevent overflow
         final cellSize = math.min(maxCellWidth, maxCellHeight)
-            .clamp(24.0, 60.0); // Minimum 24px for readability
+            .floorToDouble()
+            .clamp(20.0, 60.0);
         
-        // Calculate actual grid size
-        // Total = (cellSize + margin*2) * N + padding + border
+        // Calculate actual grid size (will be <= available space)
         final gridSize = (cellSize + (margin * 2)) * puzzle.size + totalPadding;
         
-        // Ensure gridSize doesn't exceed available space
+        // Ensure it fits
         final constrainedGridSize = math.min(
-          math.min(gridSize, availableWidth),
-          math.min(gridSize, availableHeight),
+          gridSize,
+          math.min(availableWidth, availableHeight),
         );
         
         // Handle new word found - queue flash for after line animation

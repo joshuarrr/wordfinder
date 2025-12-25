@@ -13,6 +13,7 @@ import '../../domain/entities/game_state.dart';
 import '../providers/game_providers.dart';
 import '../widgets/game_sub_header.dart';
 import '../widgets/game_footer.dart';
+import '../widgets/landscape_sidebar.dart';
 import '../widgets/word_search_grid.dart';
 import '../widgets/confetti_celebration.dart';
 import '../../../score/presentation/widgets/cumulative_score_widget.dart';
@@ -203,82 +204,140 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       });
     }
 
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Stack(
       children: [
         Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.chevron_left, size: 28),
-              onPressed: () => _showExitDialog(context),
-            ),
-            centerTitle: true,
-            title: Text(
-              widget.difficulty.displayName.toUpperCase(),
-              style: AppTypography.titleLarge.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            actions: [
-              const CumulativeScoreWidget(),
-              if (widget.gameMode == GameMode.timed)
-                IconButton(
-                  icon: Icon(
-                    gameState.isPaused
-                        ? Icons.play_arrow_rounded
-                        : Icons.pause_rounded,
+          appBar: isLandscape
+              ? null
+              : AppBar(
+                  leading: IconButton(
+                    icon: const Icon(Icons.chevron_left, size: 28),
+                    onPressed: () => _showExitDialog(context),
                   ),
-                  onPressed: () {
-                    ref.read(_gameStateProvider.notifier).togglePause();
-                    if (gameState.isPaused) {
-                      _timer?.cancel();
-                      _timerStarted = false;
-                    } else {
-                      _startTimer();
-                    }
-                  },
-                  tooltip: gameState.isPaused ? 'Resume' : 'Pause',
-                ),
-              if (AppConstants.devMode)
-                IconButton(
-                  icon: const Icon(Icons.auto_awesome_rounded),
-                  onPressed: () {
-                    ref.read(_gameStateProvider.notifier).autoComplete();
-                  },
-                  tooltip: 'Dev: Auto-complete',
-                ),
-            ],
-          ),
-          body: Column(
-            children: [
-              // Fixed sub-header: category + score
-              GameSubHeader(category: widget.category, gameState: gameState),
-              // Zoomable grid area
-              Expanded(
-                child: InteractiveViewer(
-                  minScale: 1.0,
-                  maxScale: 3.0,
-                  child: Padding(
-                    padding: AppSpacing.paddingMd,
-                    child: Center(
-                      child: WordSearchGrid(
-                        difficulty: widget.difficulty,
-                        category: widget.category,
-                        gameMode: widget.gameMode,
-                      ),
+                  centerTitle: true,
+                  title: Text(
+                    widget.difficulty.displayName.toUpperCase(),
+                    style: AppTypography.titleLarge.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  actions: [
+                    const CumulativeScoreWidget(),
+                    if (widget.gameMode == GameMode.timed)
+                      IconButton(
+                        icon: Icon(
+                          gameState.isPaused
+                              ? Icons.play_arrow_rounded
+                              : Icons.pause_rounded,
+                        ),
+                        onPressed: () {
+                          ref.read(_gameStateProvider.notifier).togglePause();
+                          if (gameState.isPaused) {
+                            _timer?.cancel();
+                            _timerStarted = false;
+                          } else {
+                            _startTimer();
+                          }
+                        },
+                        tooltip: gameState.isPaused ? 'Resume' : 'Pause',
+                      ),
+                    if (AppConstants.devMode)
+                      IconButton(
+                        icon: const Icon(Icons.auto_awesome_rounded),
+                        onPressed: () {
+                          ref.read(_gameStateProvider.notifier).autoComplete();
+                        },
+                        tooltip: 'Dev: Auto-complete',
+                      ),
+                  ],
                 ),
-              ),
-              // Fixed footer: word count + word chips
-              GameFooter(
-                gameState: gameState,
-                hintsRemaining: widget.difficulty.hints - gameState.hintsUsed,
-                onHintPressed: () {
-                  ref.read(_gameStateProvider.notifier).useHint();
-                },
-              ),
-            ],
-          ),
+          body: isLandscape
+              ? Row(
+                  children: [
+                    // Left sidebar with all info
+                    LandscapeSidebar(
+                      difficulty: widget.difficulty,
+                      category: widget.category,
+                      gameState: gameState,
+                      hintsRemaining:
+                          widget.difficulty.hints - gameState.hintsUsed,
+                      onBackPressed: () => _showExitDialog(context),
+                      onHintPressed: () {
+                        ref.read(_gameStateProvider.notifier).useHint();
+                      },
+                      showPause: widget.gameMode == GameMode.timed,
+                      isPaused: gameState.isPaused,
+                      onPausePressed: () {
+                        ref.read(_gameStateProvider.notifier).togglePause();
+                        if (gameState.isPaused) {
+                          _timer?.cancel();
+                          _timerStarted = false;
+                        } else {
+                          _startTimer();
+                        }
+                      },
+                    ),
+                    // Grid takes remaining space
+                    Expanded(
+                      child: SafeArea(
+                        left: false,
+                        child: InteractiveViewer(
+                          minScale: 1.0,
+                          maxScale: 3.0,
+                          child: Padding(
+                            padding: AppSpacing.paddingMd,
+                            child: Center(
+                              child: WordSearchGrid(
+                                difficulty: widget.difficulty,
+                                category: widget.category,
+                                gameMode: widget.gameMode,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    GameSubHeader(
+                      category: widget.category,
+                      gameState: gameState,
+                    ),
+                    Expanded(
+                      child: InteractiveViewer(
+                        minScale: 1.0,
+                        maxScale: 3.0,
+                        child: Padding(
+                          padding: AppSpacing.paddingMd,
+                          child: Center(
+                            child: WordSearchGrid(
+                              difficulty: widget.difficulty,
+                              category: widget.category,
+                              gameMode: widget.gameMode,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Fixed height footer in portrait
+                    SizedBox(
+                      height: 140,
+                      child: GameFooter(
+                        gameState: gameState,
+                        hintsRemaining:
+                            widget.difficulty.hints - gameState.hintsUsed,
+                        onHintPressed: () {
+                          ref.read(_gameStateProvider.notifier).useHint();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
         ),
         if (_showCompletionCelebration)
           ConfettiCelebration(
