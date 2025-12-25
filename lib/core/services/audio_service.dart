@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 
 /// Audio service for playing sound effects
 class AudioService {
-  final AudioPlayer _buttonPlayer = AudioPlayer();
   final AudioPlayer _wordFoundPlayer = AudioPlayer();
   final AudioPlayer _completionPlayer = AudioPlayer();
   final math.Random _random = math.Random();
@@ -16,15 +15,16 @@ class AudioService {
   }
 
   /// Play button click sound (Heavy-popping.wav)
+  /// Use wordFoundPlayer since it works - create new instance if needed
   Future<void> playButtonClick() async {
     try {
-      final path = _assetPath('sounds/Heavy-popping.wav');
-      print('playButtonClick called with path: $path');
-      await _buttonPlayer.play(AssetSource(path));
-      print('playButtonClick: play() called successfully');
-    } catch (e, stackTrace) {
-      print('playButtonClick ERROR: $e');
-      print('Stack trace: $stackTrace');
+      // Use a separate player instance for button clicks to avoid conflicts
+      final buttonPlayer = AudioPlayer();
+      await buttonPlayer.play(AssetSource(_assetPath('sounds/Heavy-popping.wav')));
+      // Don't dispose immediately - let it play, then dispose after a delay
+      Future.delayed(const Duration(seconds: 1), () => buttonPlayer.dispose());
+    } catch (e) {
+      // Silently fail if audio can't be played
     }
   }
 
@@ -51,7 +51,6 @@ class AudioService {
   }
 
   void dispose() {
-    _buttonPlayer.dispose();
     _wordFoundPlayer.dispose();
     _completionPlayer.dispose();
   }
