@@ -5,19 +5,12 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/((?!assets|canvaskit|icons|favicon|manifest|flutter|main\\.dart|version).*)",
-      "destination": "/index.html"
-    }
-  ],
-  "headers": [
+      "source": "/(.*\\.(js|css|wasm|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|wav|mp3|mp4|webp|json|bin))",
+      "destination": "/$1"
+    },
     {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
