@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/router/router.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/breakpoints.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/game_state.dart';
 import '../providers/game_providers.dart';
@@ -204,8 +205,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       });
     }
 
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape = BreakpointUtils.isLandscape(context);
 
     return Stack(
       children: [

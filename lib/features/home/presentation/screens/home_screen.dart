@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/router/router.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/breakpoints.dart';
 import '../../../../core/widgets/widgets.dart';
 
 /// Home screen with game mode selection
@@ -17,8 +18,11 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Use scrollable layout for small screens (landscape)
-            if (constraints.maxHeight < 500) {
+            // Use scrollable layout for landscape orientation or constrained height
+            final isLandscape = BreakpointUtils.isLandscape(context);
+            final isConstrainedHeight = constraints.maxHeight < 500;
+            
+            if (isLandscape || isConstrainedHeight) {
               return SingleChildScrollView(
                 padding: AppSpacing.screenPadding,
                 child: ConstrainedBox(
