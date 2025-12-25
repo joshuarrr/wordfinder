@@ -146,27 +146,22 @@ class _GridPreviewState extends State<GridPreview> {
     final previewSize = widget.size;
     final accent = widget.color ?? AppColors.primary;
     final highlightedCells = _buildHighlightedCells(_words);
-    final containerPadding = 6.0;
     final cellMargin = 0.6;
 
     final baseCellSize = widget.cellSize;
     final gridDimension = previewSize * (baseCellSize + (cellMargin * 2));
 
-    return ClipRRect(
-      borderRadius: AppSpacing.borderRadiusLg,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.surface, accent.withValues(alpha: 0.06)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          border: Border.all(color: accent.withValues(alpha: 0.25), width: 1.2),
-          boxShadow: AppShadows.soft,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.surface, accent.withValues(alpha: 0.06)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Padding(
-          padding: EdgeInsets.all(containerPadding),
-          child: FittedBox(
+        border: Border.all(color: accent.withValues(alpha: 0.25), width: 1.2),
+        boxShadow: AppShadows.soft,
+      ),
+      child: FittedBox(
             fit: BoxFit.contain,
             alignment: Alignment.center,
             child: SizedBox(
@@ -197,7 +192,6 @@ class _GridPreviewState extends State<GridPreview> {
                           margin: EdgeInsets.all(cellMargin),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(3),
                             border: Border.all(
                               color: AppColors.divider.withValues(alpha: 0.18),
                               width: 0.7,
@@ -227,8 +221,6 @@ class _GridPreviewState extends State<GridPreview> {
               ),
             ),
           ),
-        ),
-      ),
     );
   }
 }
