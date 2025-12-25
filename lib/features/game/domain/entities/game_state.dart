@@ -19,6 +19,7 @@ class GameState with _$GameState {
     @Default(false) bool isCelebrating,
     DateTime? startedAt,
     String? lastFoundWord,
+    (int, int)? hintedCell,
   }) = _GameState;
 
   const GameState._();

@@ -67,6 +67,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     final foundWords = gameState.foundWords;
     final hasError = gameState.hasError;
     final isCelebrating = gameState.isCelebrating;
+    final hintedCell = gameState.hintedCell;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -259,6 +260,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
                                           foundWords,
                                           hasError,
                                           isCelebrating,
+                                          hintedCell,
                                           finalCellSize,
                                           isHardPortrait,
                                           isMediumPortrait,
@@ -362,6 +364,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     Set<String> foundWords,
     bool hasError,
     bool isCelebrating,
+    (int, int)? hintedCell,
     double cellSize,
     bool isHardPortrait,
     bool isMediumPortrait,
@@ -371,6 +374,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
     final isSelected = selectedPath.contains((row, col));
     final isFound = _isCellFound(row, col, puzzle, foundWords);
     final isShaking = hasError && isSelected;
+    final isHinted = hintedCell == (row, col);
 
     // Determine selection color - solid color for selection
     Color? selectionColor;
@@ -395,6 +399,7 @@ class _WordSearchGridState extends ConsumerState<WordSearchGrid> {
         isFound: isFound,
         isCelebrating: isCelebrating,
         isShaking: isShaking,
+        isHinted: isHinted,
         selectionColor: selectionColor,
         cellSize: cellSize,
         fontSizeMultiplier: fontSizeMultiplier,

@@ -28,6 +28,7 @@ mixin _$GameState {
   bool get isCelebrating => throw _privateConstructorUsedError;
   DateTime? get startedAt => throw _privateConstructorUsedError;
   String? get lastFoundWord => throw _privateConstructorUsedError;
+  (int, int)? get hintedCell => throw _privateConstructorUsedError;
 
   /// Create a copy of GameState
   /// with the given fields replaced by the non-null parameter values.
@@ -53,6 +54,7 @@ abstract class $GameStateCopyWith<$Res> {
     bool isCelebrating,
     DateTime? startedAt,
     String? lastFoundWord,
+    (int, int)? hintedCell,
   });
 }
 
@@ -82,6 +84,7 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
     Object? isCelebrating = null,
     Object? startedAt = freezed,
     Object? lastFoundWord = freezed,
+    Object? hintedCell = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -129,6 +132,10 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
                 ? _value.lastFoundWord
                 : lastFoundWord // ignore: cast_nullable_to_non_nullable
                       as String?,
+            hintedCell: freezed == hintedCell
+                ? _value.hintedCell
+                : hintedCell // ignore: cast_nullable_to_non_nullable
+                      as (int, int)?,
           )
           as $Val,
     );
@@ -156,6 +163,7 @@ abstract class _$$GameStateImplCopyWith<$Res>
     bool isCelebrating,
     DateTime? startedAt,
     String? lastFoundWord,
+    (int, int)? hintedCell,
   });
 }
 
@@ -184,6 +192,7 @@ class __$$GameStateImplCopyWithImpl<$Res>
     Object? isCelebrating = null,
     Object? startedAt = freezed,
     Object? lastFoundWord = freezed,
+    Object? hintedCell = freezed,
   }) {
     return _then(
       _$GameStateImpl(
@@ -231,6 +240,10 @@ class __$$GameStateImplCopyWithImpl<$Res>
             ? _value.lastFoundWord
             : lastFoundWord // ignore: cast_nullable_to_non_nullable
                   as String?,
+        hintedCell: freezed == hintedCell
+            ? _value.hintedCell
+            : hintedCell // ignore: cast_nullable_to_non_nullable
+                  as (int, int)?,
       ),
     );
   }
@@ -251,6 +264,7 @@ class _$GameStateImpl extends _GameState {
     this.isCelebrating = false,
     this.startedAt,
     this.lastFoundWord,
+    this.hintedCell,
   }) : _foundWords = foundWords,
        _selectedPath = selectedPath,
        super._();
@@ -290,10 +304,12 @@ class _$GameStateImpl extends _GameState {
   final DateTime? startedAt;
   @override
   final String? lastFoundWord;
+  @override
+  final (int, int)? hintedCell;
 
   @override
   String toString() {
-    return 'GameState(puzzle: $puzzle, foundWords: $foundWords, selectedPath: $selectedPath, elapsedSeconds: $elapsedSeconds, hintsUsed: $hintsUsed, isPaused: $isPaused, isCompleted: $isCompleted, hasError: $hasError, isCelebrating: $isCelebrating, startedAt: $startedAt, lastFoundWord: $lastFoundWord)';
+    return 'GameState(puzzle: $puzzle, foundWords: $foundWords, selectedPath: $selectedPath, elapsedSeconds: $elapsedSeconds, hintsUsed: $hintsUsed, isPaused: $isPaused, isCompleted: $isCompleted, hasError: $hasError, isCelebrating: $isCelebrating, startedAt: $startedAt, lastFoundWord: $lastFoundWord, hintedCell: $hintedCell)';
   }
 
   @override
@@ -325,7 +341,9 @@ class _$GameStateImpl extends _GameState {
             (identical(other.startedAt, startedAt) ||
                 other.startedAt == startedAt) &&
             (identical(other.lastFoundWord, lastFoundWord) ||
-                other.lastFoundWord == lastFoundWord));
+                other.lastFoundWord == lastFoundWord) &&
+            (identical(other.hintedCell, hintedCell) ||
+                other.hintedCell == hintedCell));
   }
 
   @override
@@ -342,6 +360,7 @@ class _$GameStateImpl extends _GameState {
     isCelebrating,
     startedAt,
     lastFoundWord,
+    hintedCell,
   );
 
   /// Create a copy of GameState
@@ -366,6 +385,7 @@ abstract class _GameState extends GameState {
     final bool isCelebrating,
     final DateTime? startedAt,
     final String? lastFoundWord,
+    final (int, int)? hintedCell,
   }) = _$GameStateImpl;
   const _GameState._() : super._();
 
@@ -391,6 +411,8 @@ abstract class _GameState extends GameState {
   DateTime? get startedAt;
   @override
   String? get lastFoundWord;
+  @override
+  (int, int)? get hintedCell;
 
   /// Create a copy of GameState
   /// with the given fields replaced by the non-null parameter values.

@@ -59,6 +59,7 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
       hasError: false,
       startedAt: DateTime.now(),
       lastFoundWord: null,
+      hintedCell: null,
     );
   }
 
@@ -290,6 +291,10 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
       final allWordsFound =
           current.foundWords.length + 1 >= current.puzzle.words.length;
 
+      // Clear hint if the found word's first letter matches the hinted cell
+      final firstCell = wordPosition.cells.first;
+      final shouldClearHint = current.hintedCell == firstCell;
+
       state = AsyncData(
         current.copyWith(
           foundWords: {...current.foundWords, wordPosition.word},
@@ -297,6 +302,7 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
           isCelebrating: allWordsFound, // Start celebration if all words found
           hasError: false,
           lastFoundWord: wordPosition.word,
+          hintedCell: shouldClearHint ? null : current.hintedCell,
         ),
       );
 
@@ -375,8 +381,20 @@ class AsyncGameStateNotifier extends _$AsyncGameStateNotifier {
     final remainingWords = current.remainingWords;
     if (remainingWords.isEmpty) return;
 
-    // TODO: Implement hint logic (reveal first letter or highlight word)
-    state = AsyncData(current.copyWith(hintsUsed: current.hintsUsed + 1));
+    // Pick a random unfound word and highlight its first letter
+    final random = DateTime.now().millisecondsSinceEpoch;
+    final wordToHint = remainingWords[random % remainingWords.length];
+    final wordPosition = current.puzzle.getWordPosition(wordToHint);
+    
+    if (wordPosition != null) {
+      final firstCell = wordPosition.cells.first;
+      state = AsyncData(
+        current.copyWith(
+          hintsUsed: current.hintsUsed + 1,
+          hintedCell: firstCell,
+        ),
+      );
+    }
   }
 
   /// Dev mode: Auto-complete the puzzle by marking all words as found

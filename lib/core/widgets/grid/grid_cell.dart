@@ -16,6 +16,7 @@ class GridCell extends StatelessWidget {
     this.selectionColor,
     this.cellSize = 40,
     this.isShaking = false,
+    this.isHinted = false,
     this.fontSizeMultiplier = 0.5,
   });
 
@@ -28,6 +29,7 @@ class GridCell extends StatelessWidget {
   final Color? selectionColor;
   final double cellSize;
   final bool isShaking;
+  final bool isHinted;
   final double fontSizeMultiplier;
 
   @override
@@ -43,6 +45,9 @@ class GridCell extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: AppSpacing.borderRadiusSm,
+        border: isHinted && !isFound && !isSelected
+            ? Border.all(color: AppColors.primary, width: 2)
+            : null,
         boxShadow: isCelebrating
             ? AppShadows.cellCelebration
             : isSelected
@@ -85,6 +90,9 @@ class GridCell extends StatelessWidget {
     }
     if (isSelected) {
       return selectionColor ?? AppColors.primary;
+    }
+    if (isHinted && !isFound) {
+      return AppColors.primary.withValues(alpha: 0.3);
     }
     if (isFound) {
       return AppColors.surfaceVariant.withValues(alpha: 0.5);
